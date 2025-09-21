@@ -21,7 +21,7 @@ export const ScrollHint = () => {
 		>
 			<a
 				href="#how-it-works"
-				className="inline-flex items-center gap-2 text-xl font-medium underline underline-offset-4 opacity-90 hover:opacity-100 motion-safe:animate-bounce lg:text-2xl"
+				className="inline-flex items-center gap-2 text-xl font-medium opacity-90 hover:opacity-100 motion-safe:animate-bounce lg:text-2xl"
 			>
 				See how it works <span>↓</span>
 			</a>
