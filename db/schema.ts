@@ -1,4 +1,18 @@
-import { pgTable, text, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import { 
+    pgTable, 
+    text, 
+    integer,
+    boolean,
+    timestamp,
+    pgEnum,
+    serial,
+    primaryKey,
+    uniqueIndex,
+    index,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+
+export const trackEnums = pgEnum("track", ["vocab", "grammar", "listen"]);
 
 export const users = pgTable("users", {
     userId: text("user_id").primaryKey(),
@@ -6,8 +20,3 @@ export const users = pgTable("users", {
     displayName: text("display_name"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-export const userProgress = pgTable("user_progress", {
-    userId: text("user_id").primaryKey(),
-    userName: text("user_name").notNull().default("User"),
-})
