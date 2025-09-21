@@ -31,7 +31,6 @@ const buttonVariants = cva(
 					'bg-transparent text-[var(--on-color)] hover:bg-[color-mix(in_oklab,white_85%,var(--leaf))] dark:hover:bg-[rgba(255,255,255,.06)]',
 				link: 'text-primary underline-offset-4 hover:underline',
 
-				// Animal Crossing–inspired swatches
 				leaf: 'bg-[var(--leaf)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--leaf)_85%,black)]',
 				mint: 'bg-[var(--mint)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--mint)_85%,black)]',
 				sprout:
@@ -41,14 +40,13 @@ const buttonVariants = cva(
 				sand: 'bg-[var(--sand)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sand)_85%,black)]',
 				sage: 'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
 
-				// crisp black option
 				black: 'bg-black text-white hover:bg-[rgb(20,20,20)]'
 			},
 			size: {
 				sm: 'h-8 rounded-md gap-1.5 px-3 text-sm has-[>svg]:px-2.5',
 				default: 'h-9 px-4 py-2 text-base has-[>svg]:px-3',
 				lg: 'h-10 rounded-md px-6 text-lg has-[>svg]:px-4',
-				xl: 'h-12 px-8 text-xl has-[>svg]:px-6', // new
+				xl: 'h-12 px-8 text-2xl has-[>svg]:px-6', // new
 				icon: 'size-9'
 			},
 			rounded: {
