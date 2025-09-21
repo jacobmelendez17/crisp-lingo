@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
-import { Nunito } from 'next/font/google';
-//import { YOUR_FONT_NAME } from "next/font/google";
+import { Patrick_Hand } from 'next/font/google';
 import './globals.css';
 
-//TODO: Change font name
-//const font = YOUR_FONT_NAME
-const font = Nunito({ subsets: ['latin'] });
+const font = Patrick_Hand({ subsets: ['latin'], weight: ['400'] });
 
 export const metadata: Metadata = {
 	title: 'Create Next App',

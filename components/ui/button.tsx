@@ -7,75 +7,66 @@ import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
 	[
-		// base
 		'inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap',
-		'rounded-md text-sm font-medium outline-none transition-all',
+		'rounded-md text-sm font-normal outline-none transition-all',
 		'disabled:pointer-events-none disabled:opacity-50',
-		// keep shadcn svg helpers
 		"[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
-		// focus & invalid states (shadcn defaults)
-		'focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring',
+		'focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
 		'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive'
 	].join(' '),
 	{
 		variants: {
 			variant: {
-				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+				// keep shadcn defaults
+				default:
+					'bg-[var(--leaf)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--leaf)_85%,black)] focus-visible:ring-[var(--ring-ac)]',
 				destructive:
 					'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
 				outline:
 					'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-				ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
+				secondary:
+					// soft card-like secondary
+					'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
+				ghost:
+					'bg-transparent text-[var(--on-color)] hover:bg-[color-mix(in_oklab,white_85%,var(--leaf))] dark:hover:bg-[rgba(255,255,255,.06)]',
 				link: 'text-primary underline-offset-4 hover:underline',
 
-				// NEW: outline that reads your CSS variables (like your Svelte version)
-				accentOutline:
-					'border-2 bg-transparent text-[var(--accent-color,#4f46e5)] ' +
-					'border-[var(--accent-color,#4f46e5)] ' +
-					'hover:bg-[color-mix(in_oklab,var(--accent-color,#4f46e5)_12%,white)] ' +
-					'dark:hover:bg-[color-mix(in_oklab,var(--accent-color,#4f46e5)_18%,black)]',
+				// Animal Crossing–inspired swatches
+				leaf: 'bg-[var(--leaf)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--leaf)_85%,black)]',
+				mint: 'bg-[var(--mint)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--mint)_85%,black)]',
+				sprout:
+					'bg-[var(--sprout)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sprout)_85%,black)]',
+				custard:
+					'bg-[var(--custard)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--custard)_85%,black)]',
+				sand: 'bg-[var(--sand)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sand)_85%,black)]',
+				sage: 'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
 
-				// NEW: gradient with a subtle animated shine
-				gradient:
-					'relative text-white ' +
-					'bg-[linear-gradient(135deg,#4f46e5,#06b6d4)] hover:shadow-lg ' +
-					'before:absolute before:inset-0 before:rounded-inherit ' +
-					'before:bg-[linear-gradient(120deg,transparent,rgba(255,255,255,.25),transparent)] ' +
-					'before:-translate-x-full before:animate-[shine_1.1s_ease-in-out] before:pointer-events-none'
+				// crisp black option
+				black: 'bg-black text-white hover:bg-[rgb(20,20,20)]'
 			},
 			size: {
-				default: 'h-9 px-4 py-2 has-[>svg]:px-3',
-				sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
-				lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
+				sm: 'h-8 rounded-md gap-1.5 px-3 text-sm has-[>svg]:px-2.5',
+				default: 'h-9 px-4 py-2 text-base has-[>svg]:px-3',
+				lg: 'h-10 rounded-md px-6 text-lg has-[>svg]:px-4',
+				xl: 'h-12 px-8 text-xl has-[>svg]:px-6', // new
 				icon: 'size-9'
 			},
-			// NEW: quick corner control
 			rounded: {
 				md: 'rounded-md',
 				lg: 'rounded-lg',
 				xl: 'rounded-xl',
 				'2xl': 'rounded-2xl'
 			},
-			// NEW: opt-in press animation
 			pressable: {
-				true:
-					// “squash” (down + slight x/y scale). Keep transforms small for accessibility.
-					'active:translate-y-[6%] active:scale-x-[1.03] active:scale-y-[0.92] transition-transform duration-75',
+				true: 'active:translate-y-[6%] active:scale-x-[1.03] active:scale-y-[0.92] transition-transform duration-75',
 				false: ''
 			}
 		},
-		compoundVariants: [
-			// keep the rounded prop consistent with size defaults
-			{ size: 'sm', rounded: 'md', className: '' },
-			{ size: 'default', rounded: 'md', className: '' },
-			{ size: 'lg', rounded: 'md', className: '' }
-		],
 		defaultVariants: {
-			variant: 'default',
+			variant: 'default', // uses --leaf green
 			size: 'default',
 			rounded: 'md',
-			pressable: false
+			pressable: true // feels nice for buttons
 		}
 	}
 );
