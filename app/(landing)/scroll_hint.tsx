@@ -23,7 +23,7 @@ export const ScrollHint = () => {
 				href="#how-it-works"
 				className="inline-flex items-center gap-2 text-xl font-medium opacity-90 hover:opacity-100 motion-safe:animate-bounce lg:text-2xl"
 			>
-				See how it works <span>↓</span>
+				See how it works <span>↓</span> {/*TODO: Change the arrow*/}
 			</a>
 		</div>
 	);

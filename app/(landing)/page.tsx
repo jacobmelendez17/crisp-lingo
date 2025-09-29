@@ -71,7 +71,6 @@ export default function Home() {
 
 			<ScrollHint />
 
-			{/* HOW IT WORKS */}
 			<section id="how-it-works" className="border-t border-black/5 bg-[#faf5e6] py-20">
 				<div className="mx-auto w-full max-w-[1200px] px-8">
 					<h2 className="mb-10 text-2xl font-bold text-neutral-800 lg:text-4xl">

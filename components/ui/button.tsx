@@ -25,12 +25,15 @@ const buttonVariants = cva(
 				outline:
 					'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
 				secondary:
-					// soft card-like secondary
 					'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
-				ghost:
-					'bg-transparent text-[var(--on-color)] hover:bg-[color-mix(in_oklab,white_85%,var(--leaf))] dark:hover:bg-[rgba(255,255,255,.06)]',
+				locked: `
+					relative text-gray-700 
+					bg-gray-300 
+					cursor-not-allowed 
+					before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,#9ca3af_0px,#9ca3af_10px,#d1d5db_10px,#d1d5db_20px)]
+					before:opacity-50 before:rounded-inherit before:pointer-events-none
+				`,
 				link: 'text-primary underline-offset-4 hover:underline',
-
 				leaf: 'bg-[var(--leaf)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--leaf)_85%,black)]',
 				mint: 'bg-[var(--mint)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--mint)_85%,black)]',
 				sprout:
