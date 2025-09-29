@@ -61,7 +61,7 @@ export default function Home() {
 
 							<SignedIn>
 								<Button size="xl" variant="secondary" asChild>
-									<Link href="/learn">Continue Learning</Link>
+									<Link href="/dashboard">Continue Learning</Link>
 								</Button>
 							</SignedIn>
 						</ClerkLoaded>

@@ -28,6 +28,7 @@ const buttonVariants = cva(
 					'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
 				locked: `
 					relative text-gray-700 
+					disabled
 					bg-gray-300 
 					cursor-not-allowed 
 					before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,#9ca3af_0px,#9ca3af_10px,#d1d5db_10px,#d1d5db_20px)]
