@@ -1,5 +1,5 @@
 import { Header as GlobalHeader } from '@/components/header';
-// import { Footer } from '@/components/footer'; // optional
+// import { Footer } from '@/components/footer';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
