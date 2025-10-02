@@ -26,7 +26,7 @@ export const Header = () => {
 					</SignedIn>
 					<SignedOut>
 						<SignInButton mode="modal">
-							<Button size="xl" variant="ghost">
+							<Button size="xl" variant="custard">
 								Login
 							</Button>
 						</SignInButton>
