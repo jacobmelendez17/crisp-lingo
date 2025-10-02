@@ -1,4 +1,4 @@
-import { Header } from '@/components/header';
+import { LandingHeader } from './landing-header';
 import { Footer } from './footer';
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 const LandingLayout = ({ children }: Props) => {
 	return (
 		<div className="flex min-h-screen flex-col">
-			<Header />
+			<LandingHeader />
 			<main className="flex flex-1 flex-col items-center justify-center">{children}</main>
 			<Footer />
 		</div>

@@ -3,8 +3,6 @@ import { Patrick_Hand } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 
-import { Header } from '@/components/header';
-
 const font = Patrick_Hand({ subsets: ['latin'], weight: ['400'] });
 
 export const metadata: Metadata = {
@@ -18,11 +16,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<ClerkProvider>
-			<html lang="en">
-				<Header />
-				<body className={font.className}>{children}</body>
-			</html>
-		</ClerkProvider>
+		<html lang="en">
+			<body className={font.className}>
+				<ClerkProvider>
+					<main className="min-h-screen">{children}</main>
+				</ClerkProvider>
+			</body>
+		</html>
 	);
 }
