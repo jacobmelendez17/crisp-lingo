@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 					<ActivityCard />
 					<ProgressCard />
 				</div>
-				<aside className="h-fit lg:sticky lg:top-6">
+				<aside className="h-fit lg:top-6">
 					<LevelProgressCard />
 				</aside>
 			</div>
