@@ -9,8 +9,10 @@ import {
     primaryKey,
     uniqueIndex,
     index,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { jsonb } from "drizzle-orm/pg-core";
 
 export const trackEnums = pgEnum("track", ["vocab", "grammar", "listen"]);
 
@@ -35,5 +37,17 @@ export const levels = pgTable("levels", {
 
 export const vocab = pgTable("vocab", {
     id: serial("id").primaryKey(),
-
-})
+    word: varchar("word", { length: 128 }).notNull(),
+    translation: varchar("translation", { length: 128 }).notNull(),
+    pronunciation: varchar("pronunciation", { length: 256 }),
+    meaning: text("meaning").notNull(),
+    example: text("example").notNull(),
+    exampleTranslation: text("example_translation").notNull(),
+    mnemonic: text("mnemonic"),
+    partOfSpeech: varchar("part_of_speech", { length: 64 }),
+    imageUrl: text("image_src"),
+    audioUrl: text("audio_src"),
+    meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
