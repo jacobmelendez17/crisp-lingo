@@ -51,3 +51,19 @@ export const vocab = pgTable("vocab", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const grammar = pgTable("grammar", {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 160 }).notNull(),
+    structure: varchar("structure", { length: 64 }).notNull(),
+    summary: text("summary"),
+    explanation: text("explanation"),
+    example: text("example"),
+    exampleTranslation: text("example_translation"),
+    partOfSpeech: varchar("part_of_speech", { length: 64 }),
+    imageUrl: text("image_src"),
+    audioUrl: text("audio_src"),
+    meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
