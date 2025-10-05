@@ -20,3 +20,20 @@ export const users = pgTable("users", {
     displayName: text("display_name"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const courses = pgTable("courses", {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    imageSrc: text("image_src").notNull(),
+});
+
+export const levels = pgTable("levels", {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    courseId: integer("course_id").references(() => courses.id, { onDelete: "cascade" }).notNull(),
+});
+
+export const vocab = pgTable("vocab", {
+    id: serial("id").primaryKey(),
+
+})
