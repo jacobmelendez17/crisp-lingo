@@ -10,11 +10,18 @@ import {
     uniqueIndex,
     index,
     varchar,
+    jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { jsonb } from "drizzle-orm/pg-core";
 
-export const trackEnums = pgEnum("track", ["vocab", "grammar", "listen"]);
+export const itemTypeEnum = pgEnum("item_type", ["vocab", "grammar"] as const);
+export const srsStatusEnum = pgEnum("srs_status", [
+    "new",
+    "learning",
+    "reviewing",
+    "completed",
+    "suspended"
+] as const);
 
 export const users = pgTable("users", {
     userId: text("user_id").primaryKey(),
