@@ -75,7 +75,7 @@ export function ForecastCard() {
 	return (
 		<CardShell
 			title="Forecast"
-			className="bg-[#ffffff]"
+			className="bg-white"
 			actions={
 				<div className="flex gap-2 rounded-xl bg-neutral-100 p-1">
 					<button
