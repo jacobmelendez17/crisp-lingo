@@ -74,3 +74,15 @@ export const grammar = pgTable("grammar", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const userProgress = pgTable("user_progress", {
+    userId: text("user_id").primaryKey(),
+    userName: text("user_name").notNull().default("User"),
+    userImageSrc: text("user_image_src").notNull().default("/mascot.svg"), //CHANGE THE IMAGE DEFAULT
+    activeLevel: serial("active_level").notNull().references(() => levels.id, { onDelete: "cascade"}),
+    nextLevelUnlocked: boolean("next_level_unlocked").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    learnedWords: integer("learned_words").notNull().default(0),
+    learnedGrammar: integer("learned_grammar").notNull().default(0),
+});
