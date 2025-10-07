@@ -3,21 +3,23 @@ import { CardShell } from './card-shell';
 export function ProgressCard() {
 	return (
 		<CardShell title="Progress">
-			<CardShell title="Progress" className="bg-white">
-				<div>Progress Card</div>
-			</CardShell>
-			<CardShell title="Progress" className="bg-white">
-				<div>Progress Card</div>
-			</CardShell>
-			<CardShell title="Progress" className="bg-white">
-				<div>Progress Card</div>
-			</CardShell>
-			<CardShell title="Progress" className="bg-white">
-				<div>Progress Card</div>
-			</CardShell>
-			<CardShell title="Progress" className="bg-white">
-				<div>Progress Card</div>
-			</CardShell>
+			<div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+				<CardShell title="Beginner Pup" className="bg-white">
+					<div> </div>
+				</CardShell>
+				<CardShell title="Pond Treader" className="bg-white">
+					<div> </div>
+				</CardShell>
+				<CardShell title="River Rider" className="bg-white">
+					<div> </div>
+				</CardShell>
+				<CardShell title="Expert Swimmer" className="bg-white">
+					<div> </div>
+				</CardShell>
+				<CardShell title="Pro Diver" className="bg-white">
+					<div> </div>
+				</CardShell>
+			</div>
 		</CardShell>
 	);
 }
