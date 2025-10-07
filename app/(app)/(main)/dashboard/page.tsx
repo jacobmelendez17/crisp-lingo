@@ -16,11 +16,13 @@ export default async function DashboardPage() {
 					</div>
 					<ForecastCard />
 					<ActivityCard />
-					<ProgressCard />
 				</div>
 				<aside className="h-fit lg:top-6">
 					<LevelProgressCard />
 				</aside>
+				<div className="col-span-full lg:col-[1/-1]">
+					<ProgressCard />
+				</div>
 			</div>
 		</main>
 	);
