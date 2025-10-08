@@ -1,9 +1,12 @@
 import { CardShell } from './card-shell';
+import { LearnButton } from './buttons/learn-button';
 
 export function LearnCard() {
 	return (
 		<CardShell title="Learn" className="bg-[#cfbb99] text-white" titleClassName="text-white">
-			<div>Learn Card</div>
+			<p>Learn something new</p>
+			<LearnButton href="/" label="Start Lessons" />
+			<LearnButton href="/" label="Advanced" />
 		</CardShell>
 	);
 }
