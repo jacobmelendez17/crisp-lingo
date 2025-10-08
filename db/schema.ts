@@ -48,15 +48,15 @@ export const vocab = pgTable("vocab", {
     translation: varchar("translation", { length: 128 }).notNull(),
     pronunciation: varchar("pronunciation", { length: 256 }),
     meaning: text("meaning").notNull(),
-    example: text("example").notNull(),
-    exampleTranslation: text("example_translation").notNull(),
+    example: text("example"),
+    exampleTranslation: text("example_translation"),
     mnemonic: text("mnemonic"),
     partOfSpeech: varchar("part_of_speech", { length: 64 }),
     imageUrl: text("image_src"),
     audioUrl: text("audio_src"),
     meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const grammar = pgTable("grammar", {
