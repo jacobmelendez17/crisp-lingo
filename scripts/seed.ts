@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
+import { sql as dsql } from "drizzle-orm";
 
 import * as schema from "../db/schema";
 
@@ -11,16 +12,29 @@ const main = async () => {
     try {
         console.log("Seeding database");
 
-        await db.delete(schema.userProgress);
+        try {
+            await db.execute(dsql`delete from "user_progress"`);
+        } catch {
+
+        }
 
         await db.insert(schema.vocab).values([
             {
-                id: 1,
                 word: "Word!",
                 translation: "Word in english!",
                 meaning: "Meaning goes here!",
             },
-        ])
+            {
+                word: "Word!",
+                translation: "Word in english!",
+                meaning: "Meaning goes here!",
+            },
+            {
+                word: "Word!",
+                translation: "Word in english!",
+                meaning: "Meaning goes here!",
+            },
+        ]);
 
         console.log("Seeding finished");
     } catch (error) {
