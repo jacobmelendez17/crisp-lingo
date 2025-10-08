@@ -20,18 +20,18 @@ const main = async () => {
 
         await db.insert(schema.vocab).values([
             {
-                word: "Word!",
-                translation: "Word in english!",
+                word: "perro",
+                translation: "dog",
                 meaning: "Meaning goes here!",
             },
             {
-                word: "Word!",
-                translation: "Word in english!",
+                word: "gato",
+                translation: "cat",
                 meaning: "Meaning goes here!",
             },
             {
-                word: "Word!",
-                translation: "Word in english!",
+                word: "uno",
+                translation: "one",
                 meaning: "Meaning goes here!",
             },
         ]);
