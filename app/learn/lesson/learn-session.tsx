@@ -46,8 +46,9 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 							className="h-28 w-28 object-contain"
 						/>
 					</div>
+					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
-				<h1>{current.word}</h1>
+
 				<p>{current.translation}</p>
 			</main>
 			<Footer
