@@ -3,42 +3,20 @@ import { getBatch } from '@/db/queries';
 import { LearnSession } from './learn-session';
 
 const LessonPage = async () => {
-	//const batch = await getBatch(5);
-	const batch = [
-		{
-			id: 1,
-			word: 'hola',
-			translation: 'hello',
-			meaning: 'A common Spanish greeting used at any time of day.'
-		},
-		{
-			id: 2,
-			word: 'gracias',
-			translation: 'thank you',
-			meaning: 'Used to express gratitude or appreciation.'
-		},
-		{
-			id: 3,
-			word: 'adiós',
-			translation: 'goodbye',
-			meaning: 'Used when parting or leaving someone.'
-		},
-		{
-			id: 4,
-			word: 'por favor',
-			translation: 'please',
-			meaning: 'Used to make polite requests.'
-		},
-		{
-			id: 5,
-			word: 'perdón',
-			translation: 'sorry',
-			meaning: 'Used to apologize or get someone’s attention politely.'
-		}
-	];
-	if (!batch?.length) return null;
+	const rows = await getBatch(5);
 
-	const first = batch[0]; // 👈 take the first seeded vocab row
+	if (!rows?.length) return null;
+
+	const batch = rows.map((r) => ({
+		id: r.id,
+		word: r.word,
+		translation: r.translation,
+		meaning: r.meaning ?? null,
+		pronunciation: r.pronunciation ?? null,
+		example: r.example ?? null,
+		imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null,
+		audioUrl: r.audioUrl ?? null
+	}));
 
 	return <LearnSession initialPercentage={0} batch={batch} />;
 };

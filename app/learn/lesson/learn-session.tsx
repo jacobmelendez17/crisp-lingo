@@ -35,6 +35,17 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 			<Header percentage={percentage} />
 			<main className="mx-auto max-w-2xl p-6">
 				<article className="mt-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+					<section className="flex flex-col items-center">
+						<div className="mb-4 h-28 w-28">
+							<Image
+								src={current.imageUrl || 'vercel.svg'}
+								alt={current.word}
+								width={112}
+								height={112}
+								className="h-28 w-28 object-contain"
+							/>
+						</div>
+					</section>
 					<h1>{current.word}</h1>
 					<p>{current.translation}</p>
 				</article>

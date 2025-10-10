@@ -23,28 +23,31 @@ const main = async () => {
                 word: "perro",
                 translation: "dog",
                 meaning: "Meaning goes here!",
-                imageUrl: "dog.svg"
+                imageUrl: "/starter-icons/dog.svg"
             },
             {
                 word: "gato",
                 translation: "cat",
                 meaning: "Meaning goes here!",
-                imageUrl: "cat.svg"
+                imageUrl: "/starter-icons/cat.svg"
             },
             {
                 word: "casa",
                 translation: "house",
                 meaning: "Meaning goes here!",
+                imageUrl: "/starter-icons/house.svg"
             },
             {
                 word: "manzana",
                 translation: "apple",
                 meaning: "Meaning goes here!",
+                imageUrl: "/starter-icons/apple.svg"
             },
             {
                 word: "silla",
                 translation: "chair",
                 meaning: "Meaning goes here!",
+                imageUrl: "/starter-icons/chair.svg"
             },
         ]);
 
