@@ -43,6 +43,8 @@ const buttonVariants = cva(
 					'bg-[var(--custard)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--custard)_85%,black)]',
 				sand: 'bg-[var(--sand)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sand)_85%,black)]',
 				sage: 'bg-[var(--sage)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
+				meaning:
+					'bg-[var(--meaning)] text-[var(--on-color)] hover:bg-[color-mix(in_oklab,var(--sage)_85%,black)]',
 
 				black: 'bg-black text-white hover:bg-[rgb(20,20,20)]'
 			},
