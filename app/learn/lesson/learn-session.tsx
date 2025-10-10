@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Header } from '../header';
 import { Footer } from '../footer';
 import Image from 'next/image';
-//import Button from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type VocabItem = {
 	id: number;
@@ -14,6 +14,7 @@ type VocabItem = {
 	meaning: string | null;
 	pronunciation?: string | null;
 	example?: string | null;
+	partOfSpeech?: string | null;
 	imageUrl?: string | null;
 	audioUrl?: string | null;
 };
@@ -27,7 +28,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 	if (!batch?.length) return null;
 
 	const [percentage] = useState(initialPercentage === 100 ? 0 : initialPercentage);
-
+	const [activeTab, setActiveTab] = useState<'meaning' | 'reading' | 'context'>('meaning');
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const total = batch.length;
 	const current = batch[currentIndex];
@@ -48,8 +49,47 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					</div>
 					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
-
-				<p>{current.translation}</p>
+				<div className="mt-4 border-t-2 border-dotted border-black" />
+				<div className="gap-30 flex justify-center">
+					<Button
+						variant={activeTab === 'meaning' ? 'sage' : 'outline'}
+						rounded="2xl"
+						onClick={() => setActiveTab('meaning')}
+					>
+						meaning
+					</Button>
+					<Button
+						variant={activeTab === 'reading' ? 'sage' : 'outline'}
+						rounded="2xl"
+						onClick={() => setActiveTab('reading')}
+					>
+						reading
+					</Button>
+					<Button
+						variant={activeTab === 'context' ? 'sage' : 'outline'}
+						rounded="2xl"
+						onClick={() => setActiveTab('context')}
+					>
+						context
+					</Button>
+				</div>
+				<div className="border-t-2 border-dotted border-black" />
+				<section className="mt-8 rounded-[28px] border border-black/5 bg-[#b8d9b3] p-6 shadow-sm">
+					<div className="grid gap-8 sm:grid-cols-2">
+						<div>
+							<h2 className="mb-2 text-2xl font-semibold">Word Type</h2>
+							<p className="leading-relaxed text-neutral-800">
+								{current.partOfSpeech || 'No PoS yet'}
+							</p>
+						</div>
+						<div>
+							<h2 className="mb-2 text-2xl font-semibold">Explanation</h2>
+							<p className="leading-relaxed text-neutral-800">
+								{current.meaning || 'No meaning made for this word yet'}
+							</p>
+						</div>
+					</div>
+				</section>
 			</main>
 			<Footer
 				currentIndex={currentIndex}

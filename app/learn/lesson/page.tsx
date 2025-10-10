@@ -14,6 +14,7 @@ const LessonPage = async () => {
 		meaning: r.meaning ?? null,
 		pronunciation: r.pronunciation ?? null,
 		example: r.example ?? null,
+		partOfSpeech: r.partOfSpeech ?? null,
 		imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null,
 		audioUrl: r.audioUrl ?? null
 	}));
