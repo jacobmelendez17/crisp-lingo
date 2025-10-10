@@ -15,7 +15,7 @@ export const Footer = ({
 	backAction?: () => void;
 }) => {
 	return (
-		<footer className="fixed bottom-0 left-0 right-0 flex h-[90px] items-center justify-center border-t-2 border-green-200 bg-[#fff9f5] px-6">
+		<footer className="fixed bottom-0 left-0 right-0 flex h-[90px] items-center justify-center border-t-2 border-green-200 bg-[#fff9f5] px-6 backdrop-blur-2xl">
 			<div className="flex items-center gap-20">
 				<div className="flex w-[90px] justify-center">
 					{currentIndex > 0 ? (
