@@ -1,6 +1,7 @@
 import db from '@/db/drizzle'; // ⬅️ use your existing drizzle client
 import { vocab } from '@/db/schema'; // ⬅️ your schema export
 import { asc } from 'drizzle-orm';
+import { Quiz } from './learn-session';
 
 export default async function LessonPage() {
 	// Grab the first vocab entry (seeded) deterministically
