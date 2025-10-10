@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+
 import { Header } from '../header';
+import { Footer } from '../footer';
 import Image from 'next/image';
 //import Button from '@/components/ui/button';
 
@@ -18,22 +20,31 @@ type VocabItem = {
 
 type Props = {
 	initialPercentage: number;
-	firstItem: VocabItem; // 👈 new prop
+	batch: VocabItem[];
 };
 
-export const LearnSession = ({ initialPercentage, firstItem }: Props) => {
+export const LearnSession = ({ initialPercentage, batch }: Props) => {
 	const [percentage] = useState(initialPercentage === 100 ? 0 : initialPercentage);
+
+	const [currentIndex, setCurrentIndex] = useState(0);
+	const total = batch.length;
+	const current = batch[currentIndex];
 
 	return (
 		<>
 			<Header percentage={percentage} />
 			<main className="mx-auto max-w-2xl p-6">
 				<article className="mt-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-					<div className="text-3xl font-bold">{firstItem.word}</div>
-					<div className="mt-2 text-neutral-700">{firstItem.translation}</div>
-					{firstItem.meaning && <p className="mt-4 text-neutral-600">{firstItem.meaning}</p>}
+					<h1>{current.word}</h1>
+					<p>{current.translation}</p>
 				</article>
 			</main>
+			<Footer
+				currentIndex={currentIndex}
+				total={total}
+				nextAction={() => setCurrentIndex((i) => Math.min(i + 1, total - 1))}
+				backAction={currentIndex > 0 ? () => setCurrentIndex((i) => Math.max(i - 1, 0)) : undefined}
+			/>
 		</>
 	);
 };
