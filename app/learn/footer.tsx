@@ -42,10 +42,20 @@ export const Footer = ({
 						/>
 					))}
 				</div>
-				<Button variant="leaf" onClick={nextAction}>
-					<span className="hidden sm:inline">Next</span>
-					<ChevronRight className="h-5 w-5" />
-				</Button>
+
+				<div className="flex w-[90px] justify-center">
+					{currentIndex < total - 1 ? (
+						<Button variant="leaf" onClick={nextAction}>
+							<span className="hidden sm:inline">Next</span>
+							<ChevronRight className="h-5 w-5" />
+						</Button>
+					) : (
+						<Button variant="leaf" onClick={nextAction}>
+							<span className="hidden sm:inline">Start Quiz</span>
+							<ChevronRight className="h-5 w-5" />
+						</Button>
+					)}
+				</div>
 			</div>
 		</footer>
 	);
