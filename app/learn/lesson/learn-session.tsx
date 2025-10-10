@@ -5,10 +5,10 @@ import { Header } from '../header';
 
 type Props = {
 	initialPercentage: number;
-	initialLessonId: number;
+	initialLessonId?: number;
 };
 
-export const Quiz = ({ initialPercentage, initialLessonId }: Props) => {
+export const LearnSession = ({ initialPercentage, initialLessonId }: Props) => {
 	const [percentage, setPercentage] = useState(() =>
 		initialPercentage === 100 ? 0 : initialPercentage
 	);
