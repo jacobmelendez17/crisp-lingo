@@ -1,4 +1,3 @@
-// app/learn/lesson/page.tsx
 import db from '@/db/drizzle'; // ⬅️ use your existing drizzle client
 import { vocab } from '@/db/schema'; // ⬅️ your schema export
 import { asc } from 'drizzle-orm';
