@@ -52,6 +52,7 @@ export const vocab = pgTable("vocab", {
     exampleTranslation: text("example_translation"),
     mnemonic: text("mnemonic"),
     partOfSpeech: varchar("part_of_speech", { length: 64 }),
+    synonyms: text("synonyms"),
     imageUrl: text("image_src"),
     audioUrl: text("audio_src"),
     meta: jsonb("meta").$type<Record<string, unknown>>().default({}),

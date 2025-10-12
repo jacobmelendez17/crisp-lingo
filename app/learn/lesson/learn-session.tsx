@@ -18,6 +18,7 @@ type VocabItem = {
 	pronunciation?: string | null;
 	example?: string | null;
 	partOfSpeech?: string | null;
+	synonyms?: string | null;
 	imageUrl?: string | null;
 	audioUrl?: string | null;
 };
