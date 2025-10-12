@@ -1,4 +1,4 @@
-import { CardShell } from './card-shell';
+import { CardShell } from '../../../../components/card-shell';
 import { LearnButton } from './buttons/learn-button';
 
 export function LearnCard() {

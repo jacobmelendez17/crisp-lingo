@@ -49,7 +49,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 			<Header percentage={percentage} />
 			{/*TODO: Make sub-components so this isn't so clustered
 				Make components for meaning, reading, and context */}
-			<main className="mx-auto max-w-2xl p-6">
+			<main className="mx-auto max-w-screen-lg p-6">
 				<section className="flex flex-col items-center">
 					<div className="mb-4 h-28 w-28">
 						<Image
@@ -63,6 +63,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
 				<div className="mt-4 border-t-2 border-dotted border-black" />
+				{/* TODO: Fix the slider so it is centered with the tabs and matches color. Might need to change color*/}
 				<div className="gap-30 relative mx-auto flex w-fit items-center justify-center rounded-[28px] bg-transparent p-1">
 					<span
 						className="absolute inset-y-0 left-0 z-0 h-full rounded-[24px] bg-[#b8d9b3] transition-transform duration-300 ease-out"

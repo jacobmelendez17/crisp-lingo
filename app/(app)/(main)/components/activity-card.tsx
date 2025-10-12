@@ -1,6 +1,6 @@
 'use client';
 
-import { CardShell } from './card-shell';
+import { CardShell } from '../../../../components/card-shell';
 import { Line } from 'react-chartjs-2';
 import {
 	Chart as ChartJS,
