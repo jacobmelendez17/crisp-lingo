@@ -63,7 +63,9 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					</div>
 					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
-				<div className="mt-4 border-t-2 border-dotted border-black" />
+
+				<div className="border-t-7 mt-4 border-dotted border-[#a3c1ad]" />
+
 				{/* TODO: Fix the slider so it is centered with the tabs and matches color. Might need to change color*/}
 				<div className="gap-30 relative mx-auto flex w-fit items-center justify-center rounded-[28px] bg-transparent p-1">
 					<span
@@ -105,7 +107,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					</Button>
 				</div>
 
-				<div className="border-t-2 border-dotted border-black" />
+				<div className="border-t-7 border-dotted border-[#a3c1ad]" />
 
 				{activeTab === 'meaning' && <MeaningTab item={current} />}
 				{activeTab === 'reading' && <ReadingTab item={current} />}
