@@ -36,6 +36,14 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 	const total = batch.length;
 	const current = batch[currentIndex];
 
+	const tabs: Array<{ key: 'meaning' | 'reading' | 'context'; label: string }> = [
+		{ key: 'meaning', label: 'meaning' },
+		{ key: 'reading', label: 'reading' },
+		{ key: 'context', label: 'context' }
+	];
+
+	const activeIndex = tabs.findIndex((t) => t.key === activeTab);
+
 	return (
 		<>
 			<Header percentage={percentage} />
@@ -55,10 +63,24 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
 				<div className="mt-4 border-t-2 border-dotted border-black" />
-				<div className="gap-30 flex justify-center">
+				<div className="gap-30 relative mx-auto flex w-fit items-center justify-center rounded-[28px] bg-transparent p-1">
+					<span
+						className="absolute inset-y-0 left-0 z-0 h-full rounded-[24px] bg-[#b8d9b3] transition-transform duration-300 ease-out"
+						style={{
+							width: 'calc(100% / 3)',
+							transform:
+								activeTab === 'meaning'
+									? 'translateX(0%)'
+									: activeTab === 'reading'
+										? 'translateX(100%)'
+										: 'translateX(200%)'
+						}}
+					/>
+
 					<Button
 						variant={activeTab === 'meaning' ? 'sage' : 'outline'}
 						rounded="2xl"
+						className="relative z-10"
 						onClick={() => setActiveTab('meaning')}
 					>
 						meaning
@@ -66,6 +88,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					<Button
 						variant={activeTab === 'reading' ? 'sage' : 'outline'}
 						rounded="2xl"
+						className="relative z-10"
 						onClick={() => setActiveTab('reading')}
 					>
 						reading
@@ -73,11 +96,13 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					<Button
 						variant={activeTab === 'context' ? 'sage' : 'outline'}
 						rounded="2xl"
+						className="relative z-10"
 						onClick={() => setActiveTab('context')}
 					>
 						context
 					</Button>
 				</div>
+
 				<div className="border-t-2 border-dotted border-black" />
 
 				{activeTab === 'meaning' && <MeaningTab item={current} />}
