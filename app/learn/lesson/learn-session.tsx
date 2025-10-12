@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import { Header } from '../header';
 import { Footer } from '../footer';
+import MeaningTab from './meaning';
+import ReadingTab from './reading';
+import ContextTab from './context';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
@@ -76,22 +79,10 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					</Button>
 				</div>
 				<div className="border-t-2 border-dotted border-black" />
-				<section className="mt-8 rounded-[28px] border border-black/5 bg-[#b8d9b3] p-6 shadow-sm">
-					<div className="grid gap-8 sm:grid-cols-2">
-						<div>
-							<h2 className="mb-2 text-2xl font-semibold">Word Type</h2>
-							<p className="leading-relaxed text-neutral-800">
-								{current.partOfSpeech || 'No PoS yet'}
-							</p>
-						</div>
-						<div>
-							<h2 className="mb-2 text-2xl font-semibold">Explanation</h2>
-							<p className="leading-relaxed text-neutral-800">
-								{current.meaning || 'No meaning made for this word yet'}
-							</p>
-						</div>
-					</div>
-				</section>
+
+				{activeTab === 'meaning' && <MeaningTab item={current} />}
+				{activeTab === 'reading' && <ReadingTab item={current} />}
+				{activeTab === 'context' && <ContextTab item={current} />}
 			</main>
 			<Footer
 				currentIndex={currentIndex}
