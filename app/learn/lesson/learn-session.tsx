@@ -47,9 +47,6 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 
 	return (
 		<>
-			<Header percentage={percentage} />
-			{/*TODO: Make sub-components so this isn't so clustered
-				Make components for meaning, reading, and context */}
 			<main className="mx-auto max-w-screen-lg p-6">
 				<section className="flex flex-col items-center">
 					<div className="mb-4 h-28 w-28">
