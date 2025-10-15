@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export const Footer = ({
 	currentIndex,
@@ -15,6 +16,11 @@ export const Footer = ({
 	nextAction: () => void;
 	backAction?: () => void;
 }) => {
+	const [quizUnlocked, setQuizUnlocked] = useState(currentIndex === total - 1);
+	useEffect(() => {
+		if (currentIndex === total - 1) setQuizUnlocked(true);
+	}, [currentIndex, total]);
+
 	return (
 		<footer className="fixed bottom-0 left-0 right-0 flex h-[90px] items-center justify-center border-t-2 border-green-200 bg-[#fff9f5] px-6 backdrop-blur-2xl">
 			<div className="flex items-center gap-20">
@@ -51,6 +57,13 @@ export const Footer = ({
 							<ChevronRight className="h-5 w-5" />
 						</Button>
 					) : (
+						<Button variant="locked">
+							<span className="hidden sm:inline">Next</span>
+							<ChevronRight className="h-5 w-5" />
+						</Button>
+					)}
+
+					{quizUnlocked && (
 						<Button variant="leaf" asChild>
 							<Link href="/learn/lesson/quiz">
 								<span className="hidden sm:inline">Start Quiz</span>
