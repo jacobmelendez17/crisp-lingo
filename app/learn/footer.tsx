@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export const Footer = ({
 	currentIndex,
@@ -50,9 +51,11 @@ export const Footer = ({
 							<ChevronRight className="h-5 w-5" />
 						</Button>
 					) : (
-						<Button variant="leaf" onClick={nextAction}>
-							<span className="hidden sm:inline">Start Quiz</span>
-							<ChevronRight className="h-5 w-5" />
+						<Button variant="leaf" asChild>
+							<Link href="/learn/lesson/quiz">
+								<span className="hidden sm:inline">Start Quiz</span>
+								<ChevronRight className="h-5 w-5" />
+							</Link>
 						</Button>
 					)}
 				</div>
