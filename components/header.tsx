@@ -10,14 +10,25 @@ export const Header = () => {
 	const pathname = usePathname();
 
 	return (
-		<header className="h-26 w-full border-b-2 bg-[#8ca795] px-4">
+		<header className="h-26 w-full border-b-2 bg-[#8ca795] px-6 lg:px-8">
 			<div className="mx-auto flex h-full items-center justify-between lg:max-w-screen-lg">
-				<div className="flex items-center gap-x-3 pb-7 pl-4 pt-8">
-					<Image src="/mascot.svg" alt="Crisp Lingo Otter" width={36} height={36} />
-					<h1 className="tracking wide text-4xl font-extrabold text-neutral-600">Crisp Lingo</h1>
+				{/* Left side: logo + title */}
+				<div className="flex items-center gap-x-3 pb-7 pt-8">
+					<Image
+						src="/mascot.svg"
+						alt="Crisp Lingo Otter"
+						width={40}
+						height={40}
+						className="ml-[-8px]" // move logo slightly left
+					/>
+					<h1 className="text-5xl font-extrabold tracking-wide text-neutral-600">
+						<Link href="/dashboard">Crisp Lingo</Link>
+					</h1>
 				</div>
-				<nav className="mx-auto w-full overflow-x-auto px-2 lg:max-w-screen-lg">
-					<ul className="flex gap-2 pb-1">
+
+				{/* Right side: nav */}
+				<nav className="flex items-center pb-7 pt-8">
+					<ul className="flex gap-6">
 						{APP_TABS.map((t) => {
 							const active = t.match.some((m) => pathname?.startsWith(m));
 							return (
@@ -25,17 +36,17 @@ export const Header = () => {
 									<Link
 										href={t.href}
 										className={cn(
-											'relative inline-flex rounded-xl px-4 py-2 transition',
+											'relative inline-flex rounded-xl px-4 py-2 text-xl font-semibold transition-all',
 											active
-												? 'bg-white text-neutral-900 shadow-sm'
-												: 'text-neutral-700 hover:bg-white/70'
+												? 'scale-105 bg-white text-neutral-900 shadow-sm'
+												: 'text-neutral-700 hover:scale-105 hover:bg-white/70'
 										)}
 									>
 										{t.label}
 										<span
 											className={cn(
-												'absolute -bottom-[6px] left-1/2 h-[3px] w-0 -translate-x-1/2 rounded-full bg-[var(--leaf)] transition-all',
-												active && 'w-8'
+												'absolute -bottom-[6px] left-1/2 h-[3px] w-0 -translate-x-1/2 rounded-full bg-[var(--leaf)] transition-all duration-200',
+												active && 'w-10'
 											)}
 										/>
 									</Link>
