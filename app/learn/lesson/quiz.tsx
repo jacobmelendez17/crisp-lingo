@@ -16,7 +16,9 @@ export const Quiz = ({ initialPercentage }: Props) => {
 	return (
 		<>
 			<Header percentage={initialPercentage} />
-			<div className="flex-1"></div>
+			<main className="mx-auto max-w-screen-lg p-6">
+				<div className="flex-1">Hello</div>
+			</main>
 		</>
 	);
 };
