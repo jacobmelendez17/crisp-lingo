@@ -12,14 +12,13 @@ export const Header = () => {
 	return (
 		<header className="h-26 w-full border-b-2 bg-[#8ca795] px-6 lg:px-8">
 			<div className="mx-auto flex h-full items-center justify-between lg:max-w-screen-lg">
-				{/* Left side: logo + title */}
 				<div className="flex items-center gap-x-3 pb-7 pt-8">
 					<Image
 						src="/mascot.svg"
 						alt="Crisp Lingo Otter"
 						width={40}
 						height={40}
-						className="ml-[-8px]" // move logo slightly left
+						className="ml-[-150px]"
 					/>
 					<h1 className="text-5xl font-extrabold tracking-wide text-neutral-600">
 						<Link href="/dashboard">Crisp Lingo</Link>
