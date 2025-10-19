@@ -3,6 +3,7 @@ import Link from 'next/link';
 import db from '@/db/drizzle';
 import { and, eq, asc } from 'drizzle-orm';
 import { cn } from '@/libs/utils';
+import { CardShell } from '@/components/card-shell';
 
 export default async function PracticePage() {
 	return (

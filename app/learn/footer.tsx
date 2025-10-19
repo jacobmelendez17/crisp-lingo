@@ -9,12 +9,14 @@ export const Footer = ({
 	currentIndex,
 	total,
 	nextAction,
-	backAction
+	backAction,
+	quizHref
 }: {
 	currentIndex: number;
 	total: number;
 	nextAction: () => void;
 	backAction?: () => void;
+	quizHref: string;
 }) => {
 	const [quizUnlocked, setQuizUnlocked] = useState(currentIndex === total - 1);
 	useEffect(() => {
@@ -67,7 +69,7 @@ export const Footer = ({
 						aria-hidden={!quizUnlocked}
 					>
 						<Button variant="leaf" asChild>
-							<Link href="/learn/lesson/quiz">
+							<Link href={quizHref}>
 								<span className="hidden sm:inline">Start Quiz</span>
 								<ChevronRight className="h-5 w-5" />
 							</Link>

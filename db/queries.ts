@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, inArray } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 
 import db from "./drizzle";
@@ -30,4 +30,16 @@ export const getBatch = cache(async (limit = 5) => {
         .limit(limit)
 
     return rows;
-})
+});
+
+export const getVocabByIds = cache(async (ids: number[]) => {
+	if (!ids?.length) return [];
+
+	const rows = await db
+		.select()
+		.from(vocab)
+		.where(inArray(vocab.id, ids))
+		.orderBy(asc(vocab.id));
+
+	return rows;
+});
