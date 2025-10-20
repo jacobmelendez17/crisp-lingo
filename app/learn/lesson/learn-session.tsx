@@ -30,7 +30,6 @@ type Props = {
 export const LearnSession = ({ initialPercentage, batch }: Props) => {
 	if (!batch?.length) return null;
 
-	const [percentage] = useState(initialPercentage === 100 ? 0 : initialPercentage);
 	const [activeTab, setActiveTab] = useState<'meaning' | 'reading' | 'context'>('meaning');
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const total = batch.length;
