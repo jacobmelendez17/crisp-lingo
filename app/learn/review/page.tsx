@@ -1,7 +1,9 @@
 import { Quiz } from './quiz';
 import { getVocabByIds, getBatch } from '@/db/queries';
 
-type PageProps = { searchParams?: { ids?: string } };
+type PageProps = {
+	searchParams?: { ids?: string };
+};
 
 export default async function ReviewPage({ searchParams }: PageProps) {
 	const idsParam = searchParams?.ids ?? '';
@@ -12,6 +14,8 @@ export default async function ReviewPage({ searchParams }: PageProps) {
 
 	const rows = ids.length ? await getVocabByIds(ids) : await getBatch(5);
 
+	const initialPercentage = 0;
+
 	const items = rows.map((r: any) => ({
 		id: r.id,
 		word: r.word,
@@ -21,5 +25,5 @@ export default async function ReviewPage({ searchParams }: PageProps) {
 
 	if (!items.length) return null;
 
-	return <Quiz items={items} />;
+	return <Quiz items={items} initialPercentage={initialPercentage} />;
 }

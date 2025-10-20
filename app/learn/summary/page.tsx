@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 type Row = {
 	id: number;
@@ -82,6 +83,11 @@ export default function SummaryPage() {
 					))}
 				</div>
 			</section>
+			<div className="mt-10 flex justify-center">
+				<Button asChild variant="sage" size="lg" className="px-10 py-4 text-lg">
+					<a href="/dashboard">Back to Dashboard</a>
+				</Button>
+			</div>
 		</main>
 	);
 }
