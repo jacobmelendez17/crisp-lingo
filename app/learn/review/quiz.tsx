@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Header } from '../header';
 
@@ -13,29 +13,35 @@ type Props = {
 
 function normalize(s: string) {
 	return s
-		.normalize('NFD') // split accents
-		.replace(/[\u0300-\u036f]/g, '') // strip accents
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
 		.toLowerCase()
 		.trim()
-		.replace(/\s+/g, ' ') // collapse spaces
-		.replace(/[.!?'"`(),:;[\]{}]/g, ''); // drop punctuation
+		.replace(/\s+/g, ' ')
+		.replace(/[.!?'"`(),:;[\]{}]/g, '');
 }
 
 export function Quiz({ items, initialPercentage }: Props) {
 	const [index, setIndex] = useState(0);
 	const [input, setInput] = useState('');
 	const [status, setStatus] = useState<'none' | 'correct' | 'wrong'>('none');
-	const [percentage] = useState(initialPercentage === 100 ? 0 : initialPercentage);
+
+	// 👇 progress state
+	const [progress, setProgress] = useState(initialPercentage === 100 ? 0 : initialPercentage);
+	const step = useMemo(() => {
+		// Evenly distribute remaining % across this quiz’ items
+		const remaining = Math.max(0, 100 - (initialPercentage === 100 ? 0 : initialPercentage));
+		return items.length > 0 ? remaining / items.length : 0;
+	}, [items.length, initialPercentage]);
 
 	const current = items[index];
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const acceptableAnswers = useMemo(() => {
-		// Allow multiple correct answers if author separated them by / ; or ,
 		return current.translation
 			.split(/[/;,]| or /i)
 			.map((s) => normalize(s))
-			.filter((s) => s.length > 0);
+			.filter(Boolean);
 	}, [current]);
 
 	const onSubmit = () => {
@@ -43,6 +49,11 @@ export function Quiz({ items, initialPercentage }: Props) {
 		const guess = normalize(input);
 		const isCorrect = acceptableAnswers.includes(guess);
 		setStatus(isCorrect ? 'correct' : 'wrong');
+
+		// ✅ bump progress only on correct answer (first check per item)
+		if (isCorrect) {
+			setProgress((p) => Math.min(100, p + step));
+		}
 	};
 
 	const onNext = () => {
@@ -60,7 +71,8 @@ export function Quiz({ items, initialPercentage }: Props) {
 
 	return (
 		<>
-			<Header percentage={percentage} />
+			{/* Header progress bar */}
+			<Header percentage={progress} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
 				<h1 className="mb-4 text-2xl font-bold text-neutral-800">
@@ -111,7 +123,6 @@ export function Quiz({ items, initialPercentage }: Props) {
 					</div>
 				</form>
 
-				{/* Feedback row */}
 				<div className="mt-3 h-6">
 					{status === 'correct' && (
 						<p className="text-sm font-semibold text-green-700">Nice! That’s correct.</p>
