@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Header } from '../header';
 import { useRouter } from 'next/navigation';
 
-type Item = { id: number; word: string; translation: string };
+import { Button } from '@/components/ui/button';
+import { Header } from '../header';
+import Image from 'next/image';
+
+type Item = { id: number; word: string; translation: string; imageUrl: string };
 
 type Props = {
 	items: Item[];
@@ -174,6 +176,18 @@ export function Quiz({ items, initialPercentage }: Props) {
 			<Header percentage={progress} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
+				{current.imageUrl ? (
+					<div className="mb-4 h-28 w-28">
+						<Image
+							src={current.imageUrl}
+							alt={current.word}
+							width={112}
+							height={112}
+							className="h-28 w-28 rounded-xl object-contain"
+							priority
+						/>
+					</div>
+				) : null}
 				<h1 className="mb-4 text-2xl font-bold text-neutral-800">
 					Type the translation for: <span className="underline">{current.word}</span>
 				</h1>
