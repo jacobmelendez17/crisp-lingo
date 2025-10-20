@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Header } from '../header';
 
@@ -11,39 +11,46 @@ type Props = {
 	initialPercentage: number;
 };
 
-function shuffle<T>(arr: T[]) {
-	return [...arr].sort(() => Math.random() - 0.5);
+function normalize(s: string) {
+	return s
+		.normalize('NFD') // split accents
+		.replace(/[\u0300-\u036f]/g, '') // strip accents
+		.toLowerCase()
+		.trim()
+		.replace(/\s+/g, ' ') // collapse spaces
+		.replace(/[.!?'"`(),:;[\]{}]/g, ''); // drop punctuation
 }
 
 export function Quiz({ items, initialPercentage }: Props) {
 	const [index, setIndex] = useState(0);
-	const [selected, setSelected] = useState<number | null>(null);
+	const [input, setInput] = useState('');
 	const [status, setStatus] = useState<'none' | 'correct' | 'wrong'>('none');
-
-	const current = items[index];
 	const [percentage] = useState(initialPercentage === 100 ? 0 : initialPercentage);
 
-	const options = useMemo(() => {
-		const pool = shuffle(items).filter((it) => it.id !== current.id);
-		const distractors = pool.slice(0, Math.min(3, pool.length));
-		return shuffle([
-			{ id: current.id, label: current.translation, correct: true },
-			...distractors.map((d) => ({ id: d.id, label: d.translation, correct: false }))
-		]);
-	}, [items, current]);
+	const current = items[index];
+	const inputRef = useRef<HTMLInputElement>(null);
 
-	const onChoose = (optId: number) => {
+	const acceptableAnswers = useMemo(() => {
+		// Allow multiple correct answers if author separated them by / ; or ,
+		return current.translation
+			.split(/[/;,]| or /i)
+			.map((s) => normalize(s))
+			.filter((s) => s.length > 0);
+	}, [current]);
+
+	const onSubmit = () => {
 		if (status !== 'none') return;
-		setSelected(optId);
-		const correct = options.find((o) => o.correct)?.id === optId;
-		setStatus(correct ? 'correct' : 'wrong');
+		const guess = normalize(input);
+		const isCorrect = acceptableAnswers.includes(guess);
+		setStatus(isCorrect ? 'correct' : 'wrong');
 	};
 
 	const onNext = () => {
 		if (index < items.length - 1) {
 			setIndex((i) => i + 1);
-			setSelected(null);
+			setInput('');
 			setStatus('none');
+			inputRef.current?.focus();
 		} else {
 			window.location.href = '/learn';
 		}
@@ -53,48 +60,67 @@ export function Quiz({ items, initialPercentage }: Props) {
 
 	return (
 		<>
-			{/* ✅ Progress Header */}
 			<Header percentage={percentage} />
 
-			{/* ✅ Centered Quiz Content */}
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
-				<h1 className="mb-6 text-2xl font-bold text-neutral-800">
-					Select the translation for: <span className="underline">{current.word}</span>
+				<h1 className="mb-4 text-2xl font-bold text-neutral-800">
+					Type the translation for: <span className="underline">{current.word}</span>
 				</h1>
 
-				<div className="grid w-full max-w-sm gap-3">
-					{options.map((o) => {
-						const isChosen = selected === o.id;
-						const showCorrect = status !== 'none' && o.correct;
-						const showWrong = status === 'wrong' && isChosen && !o.correct;
+				<form
+					className="w-full max-w-sm"
+					onSubmit={(e) => {
+						e.preventDefault();
+						onSubmit();
+					}}
+				>
+					<input
+						ref={inputRef}
+						value={input}
+						onChange={(e) => setInput(e.target.value)}
+						placeholder="Type your answer"
+						className={[
+							'w-full rounded-xl border px-4 py-3 text-lg outline-none transition',
+							status === 'correct'
+								? 'border-green-500 ring-2 ring-green-200'
+								: status === 'wrong'
+									? 'border-red-500 ring-2 ring-red-200'
+									: 'focus:ring-[var(--leaf)]/30 border-black/15 focus:border-[var(--leaf)] focus:ring-2'
+						].join(' ')}
+						autoCapitalize="off"
+						autoComplete="off"
+						autoCorrect="off"
+						spellCheck={false}
+					/>
 
-						return (
-							<Button
-								key={o.id}
-								variant={showCorrect ? 'mint' : showWrong ? 'destructive' : 'outline'}
-								rounded="xl"
-								pressable
-								className="w-full justify-start"
-								onClick={() => onChoose(o.id)}
-								disabled={status !== 'none'}
-							>
-								{o.label}
-							</Button>
-						);
-					})}
-				</div>
+					<div className="mt-3 flex items-center justify-end gap-2">
+						<Button type="submit" variant="leaf" disabled={!input.trim() || status !== 'none'}>
+							Check
+						</Button>
 
-				<div className="mt-6 flex w-full max-w-sm items-center justify-between">
-					<span className="text-sm text-neutral-500">
-						{index + 1} / {items.length}
-					</span>
-					<Button
-						variant={status === 'correct' ? 'mint' : status === 'wrong' ? 'destructive' : 'leaf'}
-						onClick={onNext}
-						disabled={status === 'none'}
-					>
-						{index === items.length - 1 ? 'Finish' : 'Next'}
-					</Button>
+						<Button
+							type="button"
+							variant={
+								status === 'correct' ? 'mint' : status === 'wrong' ? 'destructive' : 'secondary'
+							}
+							onClick={onNext}
+							disabled={status === 'none'}
+						>
+							{index === items.length - 1 ? 'Finish' : 'Next'}
+						</Button>
+					</div>
+				</form>
+
+				{/* Feedback row */}
+				<div className="mt-3 h-6">
+					{status === 'correct' && (
+						<p className="text-sm font-semibold text-green-700">Nice! That’s correct.</p>
+					)}
+					{status === 'wrong' && (
+						<p className="text-sm text-red-700">
+							Correct answer: <span className="font-semibold">{current.translation}</span>
+						</p>
+					)}
 				</div>
 			</main>
 		</>
