@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Patrick_Hand } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import { ExitModal } from '@/components/ui/modals/exit-modal';
 import './globals.css';
 
 const font = Patrick_Hand({ subsets: ['latin'], weight: ['400'] });
@@ -16,12 +17,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body className={font.className}>
-				<ClerkProvider>
-					<main className="min-h-screen">{children}</main>
-				</ClerkProvider>
-			</body>
-		</html>
+		<ClerkProvider>
+			<html lang="en">
+				<body className={font.className}>
+					<ExitModal />
+					{children}
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }
