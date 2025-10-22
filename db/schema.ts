@@ -55,10 +55,26 @@ export const vocab = pgTable("vocab", {
     synonyms: text("synonyms"),
     imageUrl: text("image_src"),
     audioUrl: text("audio_src"),
+    levelId: integer("level_id").references(() => levels.id, { onDelete: "cascade" }).notNull(),
+    position: integer("position").notNull(),
     meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+export const userVocabSrs = pgTable("user_vocab_srs", {
+    userId: text("user_id").notNull(),
+    vocabId: integer("vocab_id").references(() => vocab.id, { onDelete: "cascade" }).notNull(),
+    srsLevel: integer("srs_level").notNull().default(0),
+    firstLearnedAt: timestamp("first_learned_at", { withTimezone: true}),
+    lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
+    nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
+},
+(t) => ({
+    pk: primaryKey({ columns: [t.userId, t.vocabId] }),
+    srsIdx: index("user_vocab_srs_pts_idx").on(t.userId, t.srsLevel),
+  })
+);
 
 export const grammar = pgTable("grammar", {
     id: serial("id").primaryKey(),

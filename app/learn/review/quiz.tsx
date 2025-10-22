@@ -1,20 +1,23 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Header } from '../header';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
-type Item = { id: number; word: string; translation: string; imageUrl: string };
+type Item = {
+	id: number;
+	word: string;
+	translation: string;
+	imageUrl?: string | null;
+};
 
 type Props = {
 	items: Item[];
 	initialPercentage: number;
 };
 
-// normalize helper stays the same
 function normalize(s: string) {
 	return s
 		.normalize('NFD')
@@ -27,7 +30,6 @@ function normalize(s: string) {
 
 type Status = 'none' | 'correct' | 'wrong';
 
-// for summary
 type ResultRow = {
 	id: number;
 	word: string;
@@ -41,24 +43,22 @@ type ResultRow = {
 export function Quiz({ items, initialPercentage }: Props) {
 	const router = useRouter();
 
-	// ----- progress math (award once per item) -----
+	// progress setup
 	const [progress, setProgress] = useState(initialPercentage === 100 ? 0 : initialPercentage);
 	const step = useMemo(() => {
 		const base = initialPercentage === 100 ? 0 : initialPercentage;
 		const remaining = Math.max(0, 100 - base);
-		// step = remaining / unique items
 		return items.length > 0 ? remaining / items.length : 0;
 	}, [items.length, initialPercentage]);
 
-	// ----- quiz queue (retries on wrong) -----
-	// queue holds indexes into "items"
+	// queue for retry logic
 	const [queue, setQueue] = useState<number[]>(() => items.map((_, i) => i));
-	const [cursor, setCursor] = useState(0); // current position in queue
+	const [cursor, setCursor] = useState(0);
 
 	// per-item state
-	const [awarded, setAwarded] = useState<Record<number, boolean>>({}); // progress awarded per item
-	const [attempts, setAttempts] = useState<Record<number, number>>({}); // attempts per item
-	const [firstTry, setFirstTry] = useState<Record<number, boolean>>({}); // first try correctness per item
+	const [awarded, setAwarded] = useState<Record<number, boolean>>({});
+	const [attempts, setAttempts] = useState<Record<number, number>>({});
+	const [firstTry, setFirstTry] = useState<Record<number, boolean>>({});
 
 	// UI state
 	const [input, setInput] = useState('');
@@ -72,7 +72,6 @@ export function Quiz({ items, initialPercentage }: Props) {
 	const currentIndex = queue[cursor];
 	const current = items[currentIndex];
 
-	// acceptable answers for current item
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
 		return current.translation
@@ -94,12 +93,12 @@ export function Quiz({ items, initialPercentage }: Props) {
 			[current.id]: (prev[current.id] ?? 0) + 1
 		}));
 
-		// set first-try correctness if not set
+		// record first try correctness
 		setFirstTry((prev) =>
 			prev[current.id] !== undefined ? prev : { ...prev, [current.id]: isCorrect }
 		);
 
-		// push a row for this attempt (we’ll keep the last attempt result per item in summary)
+		// update summary row
 		setRows((prev) => {
 			const filtered = prev.filter((r) => r.id !== current.id);
 			return [
@@ -119,7 +118,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 		if (isCorrect) {
 			setStatus('correct');
 
-			// only award progress once per item (first time they get it correct)
+			// only award progress once
 			if (!awarded[current.id]) {
 				setProgress((p) => Math.min(100, p + step));
 				setAwarded((prev) => ({ ...prev, [current.id]: true }));
@@ -132,25 +131,24 @@ export function Quiz({ items, initialPercentage }: Props) {
 	const goNext = () => {
 		if (!current) return;
 
-		// on wrong: reinsert the same index a little later in the queue
+		// reinsert wrong answers later in queue
 		if (status === 'wrong') {
 			const copy = [...queue];
-			// insert 2 positions ahead (or at end) to space it out slightly
 			const insertPos = Math.min(cursor + 2, copy.length);
 			copy.splice(insertPos, 0, currentIndex);
 			setQueue(copy);
 		}
 
-		// advance
 		setCursor((c) => c + 1);
 		setStatus('none');
 		setInput('');
 		inputRef.current?.focus();
 	};
 
-	// when finished: persist summary + navigate
-	if (done) {
-		// keep the *last known state* for each id (already ensured above)
+	// ✅ redirect logic moved to useEffect (fixes Router update during render)
+	useEffect(() => {
+		if (!done) return;
+
 		const summary = {
 			total: items.length,
 			correct: rows.filter((r) => r.correct).length,
@@ -158,13 +156,25 @@ export function Quiz({ items, initialPercentage }: Props) {
 			progressEnd: progress,
 			rows
 		};
-		// session storage so we don’t need server changes
-		if (typeof window !== 'undefined') {
+
+		try {
 			sessionStorage.setItem('quizSummary', JSON.stringify(summary));
+		} catch (err) {
+			console.error('Failed to save quiz summary:', err);
 		}
-		// go to summary page
-		router.replace('/learn/summary');
-		return null;
+
+		router.replace('/learn/summary'); // adjust path if needed
+	}, [done, items.length, rows, progress, router]);
+
+	if (done) {
+		return (
+			<>
+				<Header percentage={progress} />
+				<main className="flex min-h-[calc(100vh-100px)] items-center justify-center p-6">
+					<p className="text-neutral-600">Finishing up...</p>
+				</main>
+			</>
+		);
 	}
 
 	if (!current) return null;
@@ -176,6 +186,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 			<Header percentage={progress} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
+				{/* ✅ word image */}
 				{current.imageUrl ? (
 					<div className="mb-4 h-28 w-28">
 						<Image
@@ -188,6 +199,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 						/>
 					</div>
 				) : null}
+
 				<h1 className="mb-4 text-2xl font-bold text-neutral-800">
 					Type the translation for: <span className="underline">{current.word}</span>
 				</h1>
