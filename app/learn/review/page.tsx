@@ -2,15 +2,19 @@ import { Quiz } from './quiz';
 import { getVocabByIds, getNextBatch } from '@/db/queries';
 
 type PageProps = {
-	searchParams?: { ids?: string };
+	searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function ReviewPage({ searchParams }: PageProps) {
-	const idsParam = searchParams?.ids ?? '';
+	const params = await searchParams;
+	const idsParam = (params.ids ?? params.id ?? '') as string;
 	const ids = idsParam
 		.split(',')
 		.map((s) => parseInt(s.trim(), 10))
 		.filter((n) => Number.isFinite(n));
+
+	console.log('review idsParam:', idsParam);
+	console.log('review ids parsed:', ids);
 
 	const rows = ids.length ? await getVocabByIds(ids) : await getNextBatch(5);
 

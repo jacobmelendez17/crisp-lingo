@@ -2,41 +2,50 @@
 
 import db from '@/db/drizzle';
 import { userVocabSrs } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
+import { sql, inArray, and, eq } from 'drizzle-orm';
 
-// only add if items are correct on first try
-type FinalizePayload = {
-    vocabIds: number[];
-}
+type FinalizePayload = { vocabIds: number[] };
 
 export async function incrementSrsOnCompletion({ vocabIds }: FinalizePayload) {
-    const { userId } = await auth();
-    if (!userId || vocabIds.length === 0) return { ok: false };
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: 'no-user' };
 
-    const now= new Date();
+  const ids = [...new Set(vocabIds)].filter((n) => Number.isFinite(n));
+  if (ids.length === 0) return { ok: false, error: 'no-ids' };
 
-    await db
-        .insert(userVocabSrs)
-        .values(
-            vocabIds.map((vid) => ({
-                userId,
-                vocabId: vid,
-                srsLevel: 1,
-                firstLearnedAt: now,
-                lastReviewedAt: now,
-                nextReviewAt: now, // TODO: change this based on srs point. It shouldn't be now
-            }))
-        )
-        .onConflictDoUpdate({
-            target: [userVocabSrs.userId, userVocabSrs.vocabId],
-            set: {
-                srsLevel: sql`LEAST(11, ${userVocabSrs.srsLevel} + 1)`,
-                lastReviewedAt: now,
-                firstLearnedAt: sql`COALESCE(${userVocabSrs.firstLearnedAt}, ${now})`,
-                nextReviewAt: now, // TODO: change based on level. This shouldn't be now
-            }
-        });
+  const now = new Date();
 
-    return { ok: true };
+  // Single upsert (no transaction needed with neon-http)
+  const res = await db
+    .insert(userVocabSrs)
+    .values(
+      ids.map((vid) => ({
+        userId,
+        vocabId: vid,
+        srsLevel: 1,
+        firstLearnedAt: now,
+        lastReviewedAt: now,
+        nextReviewAt: now,
+      }))
+    )
+    .onConflictDoUpdate({
+      target: [userVocabSrs.userId, userVocabSrs.vocabId],
+      set: {
+        // increment srsLevel on repeat completion
+        srsLevel: sql`LEAST(11, ${userVocabSrs.srsLevel} + 1)`,
+        lastReviewedAt: now,
+        firstLearnedAt: sql`COALESCE(${userVocabSrs.firstLearnedAt}, ${now})`,
+        nextReviewAt: now,
+      },
+    })
+    .returning({ userId: userVocabSrs.userId, vocabId: userVocabSrs.vocabId, srsLevel: userVocabSrs.srsLevel });
+
+  // Optional: verify that the updated rows now have srsLevel > 0
+  // (handy while debugging)
+  // const check = await db.select({ vid: userVocabSrs.vocabId, lvl: userVocabSrs.srsLevel })
+  //   .from(userVocabSrs)
+  //   .where(and(eq(userVocabSrs.userId, userId), inArray(userVocabSrs.vocabId, ids)));
+
+  return { ok: true, updated: res };
 }

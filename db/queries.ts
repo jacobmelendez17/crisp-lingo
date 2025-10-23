@@ -1,94 +1,135 @@
 import { cache } from "react";
-import { eq, asc, inArray, between, and, sql, count } from "drizzle-orm";
+import {
+  eq,
+  asc,
+  inArray,
+  and,
+  or,
+  isNull,
+  count,
+  sql,
+} from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 
 import db from "./drizzle";
 import {
-    userProgress,
-    userVocabSrs,
-    vocab,
-    levels
+  userProgress,
+  userVocabSrs,
+  vocab,
+  levels,
 } from "@/db/schema";
 
-export const getUserProgress = cache(async () => {
-    const { userId } = await auth();
+/* ----------------------------- USER PROGRESS ----------------------------- */
 
-    if (!userId) {
-        return null;
-    }
+export const getUserProgress = async () => {
+  const { userId } = await auth();
 
-    const data = await db.query.userProgress.findFirst({
-        where: eq(userProgress.userId, userId),
-    });
-    return data;
-});
+  if (!userId) return null;
 
-//refers to batch of lessons depending on user settings
+  const data = await db.query.userProgress.findFirst({
+    where: eq(userProgress.userId, userId),
+  });
+
+  return data;
+};
+
+/* --------------------------- GENERIC BATCH FETCH -------------------------- */
+
 export const getBatch = cache(async (limit = 5) => {
-    const rows = await db
-        .select()
-        .from(vocab)
-        .orderBy(asc(vocab.id))
-        .limit(limit)
+  // Generic fallback batch (used for guests or when no progress yet)
+  const rows = await db
+    .select()
+    .from(vocab)
+    .orderBy(asc(vocab.id))
+    .limit(limit);
 
-    return rows;
+  return rows;
 });
 
-export const getVocabByIds = cache(async (ids: number[]) => {
-	if (!ids?.length) return [];
+/* -------------------------- FETCH VOCAB BY IDS --------------------------- */
 
-	const rows = await db
-		.select()
-		.from(vocab)
-		.where(inArray(vocab.id, ids))
-		.orderBy(asc(vocab.id));
+export const getVocabByIds = async (ids: number[]) => {
+  if (!ids?.length) return [];
 
-	return rows;
-});
+  const rows = await db
+    .select()
+    .from(vocab)
+    .where(inArray(vocab.id, ids))
+    .orderBy(asc(vocab.id));
 
-function computeNextStart(learnedCount: number, size: number) {
-    return Math.floor(learnedCount / size) * size + 1;
+  return rows;
+};
+
+/* ---------------------- NEXT UNLEARNED VOCAB FOR LEVEL -------------------- */
+/**
+ * Returns the next unlearned vocab items for the user's active level,
+ * ordered by position. Learned = srsLevel > 0 (excluded).
+ */
+export async function getNextUnlearnedBatchForLevel(
+  userId: string,
+  levelId: number,
+  size = 5
+) {
+  const rows = await db
+    .select({
+      id: vocab.id,
+      word: vocab.word,
+      translation: vocab.translation,
+      pronunciation: vocab.pronunciation,
+      meaning: vocab.meaning,
+      example: vocab.example,
+      partOfSpeech: vocab.partOfSpeech,
+      synonyms: vocab.synonyms,
+      imageUrl: vocab.imageUrl,
+      audioUrl: vocab.audioUrl,
+      position: vocab.position,
+      levelId: vocab.levelId,
+    })
+    .from(vocab)
+    .leftJoin(
+      userVocabSrs,
+      and(eq(userVocabSrs.vocabId, vocab.id), eq(userVocabSrs.userId, userId))
+    )
+    .where(
+      and(
+        eq(vocab.levelId, Number(levelId)),
+        // include only words the user hasn’t learned yet
+        or(isNull(userVocabSrs.srsLevel), eq(userVocabSrs.srsLevel, 0))
+      )
+    )
+    .orderBy(asc(vocab.position))
+    .limit(size);
+
+  return rows;
 }
 
-export const getLevelWindow = cache(async (levelId: number, start: number, end: number) => {
-    const rows = await db
-        .select()
-        .from(vocab)
-        .where(and(eq(vocab.levelId, levelId), between(vocab.position, start, end)))
-        .orderBy(asc(vocab.position));
-    return rows;
-});
+/* ------------------------------ MAIN GETTER ------------------------------ */
+/**
+ * Returns the next batch of vocab for the active user/level.
+ * - If user not logged in → fallback to getBatch()
+ * - If user has progress → returns next unlearned vocab for current level
+ */
+export const getNextBatch = async (size = 5) => {
+  console.log("getNextBatch(): start");
+  const { userId } = await auth();
 
-export const getNextBatchForLevel = cache(async (userId: string, levelId: number, size = 5) => {
-    const [{ learned = 0 } = { learned: 0}] = await db
-        .select({ learned: count().as("learned") })
-        .from(userVocabSrs)
-        .innerJoin(vocab, eq(userVocabSrs.vocabId, vocab.id))
-        .where(and(eq(userVocabSrs.userId, userId), eq(vocab.levelId, levelId), sql`${userVocabSrs.srsLevel} > 0` ));
+  // Guest mode fallback
+  if (!userId) return getBatch(size);
 
-        const start = computeNextStart(learned, size);
-        const end = start + size - 1;
+  const progress = await getUserProgress();
+  const levelId = progress?.activeLevel;
 
-        const rows = await getLevelWindow(levelId, start, end);
-        return rows;
-});
+  // No active level fallback
+  if (!levelId) return getBatch(size);
 
-export const getNextBatch = cache(async (size = 5) => {
-    const { userId } = await auth();
-    if (!userId) return getBatch(size);
+  // Get next unlearned vocab for this user/level
+  const rows = await getNextUnlearnedBatchForLevel(userId, levelId, size);
 
-    const progress = await getUserProgress();
-    let levelId = progress?.activeLevel ?? null;
-    if (!levelId) return getBatch(size);
+  if (!rows?.length) {
+    console.log("No unlearned items left in level → fallback batch");
+    return getBatch(size);
+  }
 
-    if (!levelId) {
-        const firstLevel = await db.query.levels.findFirst({ orderBy: asc(levels.id) });
-        if (!firstLevel) return getBatch(size);
-        levelId = firstLevel.id;
-    }
-
-    const rows = await getNextBatchForLevel(userId, levelId, size);
-    if (!rows?.length) return getBatch(size);
-
-    return rows;
-});
+  console.log(`Returning ${rows.length} vocab items`);
+  return rows;
+};
