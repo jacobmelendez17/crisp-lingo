@@ -1,5 +1,5 @@
 import { Quiz } from './quiz';
-import { getVocabByIds, getBatch } from '@/db/queries';
+import { getVocabByIds, getNextBatch } from '@/db/queries';
 
 type PageProps = {
 	searchParams?: { ids?: string };
@@ -12,7 +12,7 @@ export default async function ReviewPage({ searchParams }: PageProps) {
 		.map((s) => parseInt(s.trim(), 10))
 		.filter((n) => Number.isFinite(n));
 
-	const rows = ids.length ? await getVocabByIds(ids) : await getBatch(5);
+	const rows = ids.length ? await getVocabByIds(ids) : await getNextBatch(5);
 
 	const initialPercentage = 0;
 

@@ -6,7 +6,8 @@ import db from "./drizzle";
 import {
     userProgress,
     userVocabSrs,
-    vocab
+    vocab,
+    levels
 } from "@/db/schema";
 
 export const getUserProgress = cache(async () => {
@@ -77,8 +78,14 @@ export const getNextBatch = cache(async (size = 5) => {
     if (!userId) return getBatch(size);
 
     const progress = await getUserProgress();
-    const levelId = progress?.activeLevel;
+    let levelId = progress?.activeLevel ?? null;
     if (!levelId) return getBatch(size);
+
+    if (!levelId) {
+        const firstLevel = await db.query.levels.findFirst({ orderBy: asc(levels.id) });
+        if (!firstLevel) return getBatch(size);
+        levelId = firstLevel.id;
+    }
 
     const rows = await getNextBatchForLevel(userId, levelId, size);
     if (!rows?.length) return getBatch(size);
