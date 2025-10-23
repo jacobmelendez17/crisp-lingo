@@ -1,9 +1,8 @@
-// app/learn/lesson/page.tsx
-import { getBatch } from '@/db/queries';
+import { getNextBatch } from '@/db/queries';
 import { LearnSession } from './learn-session';
 
 const LessonPage = async () => {
-	const rows = await getBatch(5);
+	const rows = await getNextBatch(5);
 
 	if (!rows?.length) return null;
 

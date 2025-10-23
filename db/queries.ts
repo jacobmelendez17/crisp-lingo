@@ -71,3 +71,17 @@ export const getNextBatchForLevel = cache(async (userId: string, levelId: number
         const rows = await getLevelWindow(levelId, start, end);
         return rows;
 });
+
+export const getNextBatch = cache(async (size = 5) => {
+    const { userId } = await auth();
+    if (!userId) return getBatch(size);
+
+    const progress = await getUserProgress();
+    const levelId = progress?.activeLevel;
+    if (!levelId) return getBatch(size);
+
+    const rows = await getNextBatchForLevel(userId, levelId, size);
+    if (!rows?.length) return getBatch(size);
+
+    return rows;
+});
