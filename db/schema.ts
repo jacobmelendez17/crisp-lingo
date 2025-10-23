@@ -70,10 +70,10 @@ export const userVocabSrs = pgTable("user_vocab_srs", {
     lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
     nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
 },
-(t) => ({
-    pk: primaryKey({ columns: [t.userId, t.vocabId] }),
-    srsIdx: index("user_vocab_srs_pts_idx").on(t.userId, t.srsLevel),
-  })
+(t) => [
+    primaryKey({ columns: [t.userId, t.vocabId], name: "user_vocab_srs_pk" }),
+    index("user_vocab_srs_pts_idx").on(t.userId, t.srsLevel),
+  ]
 );
 
 export const grammar = pgTable("grammar", {
