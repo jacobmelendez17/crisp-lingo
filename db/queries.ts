@@ -1,10 +1,11 @@
 import { cache } from "react";
-import { eq, asc, inArray } from "drizzle-orm";
+import { eq, asc, inArray, between, and, sql, count } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 
 import db from "./drizzle";
 import {
     userProgress,
+    userVocabSrs,
     vocab
 } from "@/db/schema";
 
@@ -42,4 +43,31 @@ export const getVocabByIds = cache(async (ids: number[]) => {
 		.orderBy(asc(vocab.id));
 
 	return rows;
+});
+
+function computeNextStart(learnedCount: number, size: number) {
+    return Math.floor(learnedCount / size) * size + 1;
+}
+
+export const getLevelWindow = cache(async (levelId: number, start: number, end: number) => {
+    const rows = await db
+        .select()
+        .from(vocab)
+        .where(and(eq(vocab.levelId, levelId), between(vocab.position, start, end)))
+        .orderBy(asc(vocab.position));
+    return rows;
+});
+
+export const getNextBatchForLevel = cache(async (userId: string, levelId: number, size = 5) => {
+    const [{ learned = 0 } = { learned: 0}] = await db
+        .select({ learned: count().as("learned") })
+        .from(userVocabSrs)
+        .innerJoin(vocab, eq(userVocabSrs.vocabId, vocab.id))
+        .where(and(eq(userVocabSrs.userId, userId), eq(vocab.levelId, levelId), sql`${userVocabSrs.srsLevel} > 0` ));
+
+        const start = computeNextStart(learned, size);
+        const end = start + size - 1;
+
+        const rows = await getLevelWindow(levelId, start, end);
+        return rows;
 });
