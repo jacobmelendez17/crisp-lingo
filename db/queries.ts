@@ -120,9 +120,15 @@ export const getNextBatch = async (size = 5) => {
   const levelId = progress?.activeLevel;
 
   // No active level fallback
+  console.log(progress?.userId); 
   if (!levelId) return getBatch(size);
+    console.log("getNextBatch(): start");
+  const learned = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(userVocabSrs)
+    .where(and(eq(userVocabSrs.userId, userId), sql`${userVocabSrs.srsLevel} > 0`));
 
-  // Get next unlearned vocab for this user/level
+  console.log("learned count for user:", learned[0]?.count ?? 0);
   const rows = await getNextUnlearnedBatchForLevel(userId, levelId, size);
 
   if (!rows?.length) {

@@ -14,12 +14,16 @@ const main = async () => {
     // 1) Clear in FK-safe order (child → parent)
     // If you have userVocabSrs, delete it first
     try { await db.execute(dsql`TRUNCATE TABLE "user_vocab_srs" RESTART IDENTITY CASCADE`); } catch {}
-    await db.delete(schema.vocab);
-    await db.delete(schema.levels);
-    await db.delete(schema.courses);
-    try { await db.execute(dsql`DELETE FROM "user_progress"`); } catch {}
-
-    // 2) Insert parent rows and CAPTURE IDs
+    
+    await db.execute(dsql`
+      TRUNCATE TABLE
+        "user_vocab_srs",
+        "user_progress",
+        "vocab",
+        "levels",
+        "courses"
+      RESTART IDENTITY CASCADE
+    `);
     const [course] = await db.insert(schema.courses)
       .values({ title: "Spanish", imageSrc: "/mascot.svg" })
       .returning({ id: schema.courses.id });
@@ -28,7 +32,16 @@ const main = async () => {
       .values({ title: "Level 1", courseId: course.id })
       .returning({ id: schema.levels.id });
 
-    // 3) Insert children using captured level.id
+    await db.insert(schema.userProgress).values({
+      userId: "default",             // temp user id placeholder
+      userName: "User",
+      userImageSrc: "/mascot.svg",
+      activeLevel: level.id, 
+      nextLevelUnlocked: false,
+      learnedWords: 0,
+      learnedGrammar: 0,
+    });
+
     await db.insert(schema.vocab).values([
       {
         word: "perro",
