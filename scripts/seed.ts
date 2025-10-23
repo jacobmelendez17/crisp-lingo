@@ -70,6 +70,46 @@ const main = async () => {
         levelId: level.id,
         position: 5,
       },
+      {
+        word: "test 1",
+        translation: "dog",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/dog.svg",
+        levelId: level.id,
+        position: 6,
+      },
+      {
+        word: "test 2",
+        translation: "cat",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/cat.svg",
+        levelId: level.id,
+        position: 7,
+      },
+      {
+        word: "test 3",
+        translation: "house",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/house.svg",
+        levelId: level.id,
+        position: 8,
+      },
+      {
+        word: "test 4",
+        translation: "apple",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/apple.svg",
+        levelId: level.id,
+        position: 9,
+      },
+      {
+        word: "test 5",
+        translation: "chair",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/chair.svg",
+        levelId: level.id,
+        position: 10,
+      },
     ]);
 
     console.log("Seeding finished");
