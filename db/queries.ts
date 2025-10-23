@@ -10,6 +10,8 @@ import {
   sql,
 } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
+import { getActiveUserId } from "@/db/getActiveUserId";
+import { getOrCreateUserProgress } from "@/db/ensureUserProgress";
 
 import db from "./drizzle";
 import {
@@ -22,15 +24,12 @@ import {
 /* ----------------------------- USER PROGRESS ----------------------------- */
 
 export const getUserProgress = async () => {
-  const { userId } = await auth();
-
+  const userId = await getActiveUserId();
   if (!userId) return null;
 
-  const data = await db.query.userProgress.findFirst({
+  return db.query.userProgress.findFirst({
     where: eq(userProgress.userId, userId),
   });
-
-  return data;
 };
 
 /* --------------------------- GENERIC BATCH FETCH -------------------------- */
@@ -104,38 +103,61 @@ export async function getNextUnlearnedBatchForLevel(
 }
 
 /* ------------------------------ MAIN GETTER ------------------------------ */
-/**
- * Returns the next batch of vocab for the active user/level.
- * - If user not logged in → fallback to getBatch()
- * - If user has progress → returns next unlearned vocab for current level
- */
 export const getNextBatch = async (size = 5) => {
-  console.log("getNextBatch(): start");
-  const { userId } = await auth();
+  const userId = await getActiveUserId();
+  if (!userId) {
+    return db.select().from(vocab).orderBy(asc(vocab.id)).limit(size);
+  }
 
-  // Guest mode fallback
-  if (!userId) return getBatch(size);
-
-  const progress = await getUserProgress();
+  const progress = await getOrCreateUserProgress(); // <-- ensures row exists
   const levelId = progress?.activeLevel;
+  if (!levelId) {
+    return db.select().from(vocab).orderBy(asc(vocab.id)).limit(size);
+  }
 
-  // No active level fallback
-  console.log(progress?.userId); 
-  if (!levelId) return getBatch(size);
-    console.log("getNextBatch(): start");
+  // (optional) log for debugging
+  console.log("active user:", userId, "activeLevel:", levelId);
+
   const learned = await db
     .select({ count: sql<number>`count(*)` })
     .from(userVocabSrs)
     .where(and(eq(userVocabSrs.userId, userId), sql`${userVocabSrs.srsLevel} > 0`));
 
   console.log("learned count for user:", learned[0]?.count ?? 0);
-  const rows = await getNextUnlearnedBatchForLevel(userId, levelId, size);
+
+  const rows = await db
+    .select({
+      id: vocab.id,
+      word: vocab.word,
+      translation: vocab.translation,
+      pronunciation: vocab.pronunciation,
+      meaning: vocab.meaning,
+      example: vocab.example,
+      partOfSpeech: vocab.partOfSpeech,
+      synonyms: vocab.synonyms,
+      imageUrl: vocab.imageUrl,
+      audioUrl: vocab.audioUrl,
+      position: vocab.position,
+      levelId: vocab.levelId,
+    })
+    .from(vocab)
+    .leftJoin(
+      userVocabSrs,
+      and(eq(userVocabSrs.vocabId, vocab.id), eq(userVocabSrs.userId, userId))
+    )
+    .where(
+      and(
+        eq(vocab.levelId, Number(levelId)),
+        or(isNull(userVocabSrs.srsLevel), eq(userVocabSrs.srsLevel, 0))
+      )
+    )
+    .orderBy(asc(vocab.position))
+    .limit(size);
 
   if (!rows?.length) {
     console.log("No unlearned items left in level → fallback batch");
-    return getBatch(size);
+    return db.select().from(vocab).orderBy(asc(vocab.id)).limit(size);
   }
 
-  console.log(`Returning ${rows.length} vocab items`);
   return rows;
 };
