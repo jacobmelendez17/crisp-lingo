@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Header } from '../header';
 import { useRouter } from 'next/navigation';
+import { incrementSrsOnCompletion } from '@/app/(app)/actions/srs';
 
 type Item = {
 	id: number;
@@ -87,18 +88,15 @@ export function Quiz({ items, initialPercentage }: Props) {
 		const guess = normalize(guessRaw);
 		const isCorrect = acceptableAnswers.includes(guess);
 
-		// update attempts
 		setAttempts((prev) => ({
 			...prev,
 			[current.id]: (prev[current.id] ?? 0) + 1
 		}));
 
-		// record first try correctness
 		setFirstTry((prev) =>
 			prev[current.id] !== undefined ? prev : { ...prev, [current.id]: isCorrect }
 		);
 
-		// update summary row
 		setRows((prev) => {
 			const filtered = prev.filter((r) => r.id !== current.id);
 			return [
@@ -145,25 +143,36 @@ export function Quiz({ items, initialPercentage }: Props) {
 		inputRef.current?.focus();
 	};
 
-	// ✅ redirect logic moved to useEffect (fixes Router update during render)
 	useEffect(() => {
 		if (!done) return;
 
-		const summary = {
-			total: items.length,
-			correct: rows.filter((r) => r.correct).length,
-			firstTryCorrect: rows.filter((r) => r.firstTryCorrect).length,
-			progressEnd: progress,
-			rows
-		};
+		const correctIds = rows.filter((r) => r.correct).map((r) => r.id);
 
-		try {
-			sessionStorage.setItem('quizSummary', JSON.stringify(summary));
-		} catch (err) {
-			console.error('Failed to save quiz summary:', err);
-		}
+		(async () => {
+			try {
+				if (correctIds.length) {
+					await incrementSrsOnCompletion({ vocabIds: correctIds });
+				}
+			} catch (e) {
+				console.error('SRS update failed', e);
+			}
 
-		router.replace('/learn/summary'); // adjust path if needed
+			const summary = {
+				total: items.length,
+				correct: rows.filter((r) => r.correct).length,
+				firstTryCorrect: rows.filter((r) => r.firstTryCorrect).length,
+				progressEnd: progress,
+				rows
+			};
+
+			try {
+				sessionStorage.setItem('quizSummary', JSON.stringify(summary));
+			} catch (err) {
+				console.error('Failed to save quiz summary:', err);
+			}
+
+			router.replace('/learn/summary');
+		})();
 	}, [done, items.length, rows, progress, router]);
 
 	if (done) {
