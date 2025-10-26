@@ -106,6 +106,7 @@ export async function getNextUnlearnedBatchForLevel(
 export const getNextBatch = async (size = 5) => {
   const userId = await getActiveUserId();
   if (!userId) {
+    //TODO: A default clerk user is created. Hook an endpoint after deployment that connects to live user
     return db.select().from(vocab).orderBy(asc(vocab.id)).limit(size);
   }
 

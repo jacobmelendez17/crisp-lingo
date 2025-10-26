@@ -123,6 +123,14 @@ const main = async () => {
         levelId: level.id,
         position: 10,
       },
+      {
+        word: "test third wave",
+        translation: "chair",
+        meaning: "Meaning goes here!",
+        imageUrl: "/starter-icons/chair.svg",
+        levelId: level.id,
+        position: 11,
+      },
     ]);
 
     console.log("Seeding finished");

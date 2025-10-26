@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Footer } from '../footer';
+import { Header } from './header';
 import MeaningTab from './meaning';
 import ReadingTab from './reading';
 import ContextTab from './context';
@@ -46,6 +47,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 
 	return (
 		<>
+			<Header />
 			<main className="mx-auto max-w-screen-lg p-6">
 				<section className="flex flex-col items-center">
 					<div className="mb-4 h-28 w-28">

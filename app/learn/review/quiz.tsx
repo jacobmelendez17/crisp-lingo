@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Header } from '../header';
+import { Header } from './header';
 import { useRouter } from 'next/navigation';
 import { incrementSrsOnCompletion } from '@/app/(app)/actions/srs';
 

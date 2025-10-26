@@ -1,9 +1,7 @@
 import { getNextBatch } from '@/db/queries';
 import { LearnSession } from './learn-session';
-import { ensureUserProgress } from '@/db/ensure-progress';
 
 const LessonPage = async () => {
-	//await ensureUserProgress();
 	const rows = await getNextBatch(5);
 
 	if (!rows?.length) return null;
