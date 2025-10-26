@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Header } from './header';
 import { useRouter } from 'next/navigation';
-import { incrementSrsOnCompletion } from '@/app/(app)/actions/srs';
+import { setSrsToOne, applyReviewSrs } from '@/app/(app)/actions/srs';
 
 type Item = {
 	id: number;
@@ -17,6 +17,7 @@ type Item = {
 type Props = {
 	items: Item[];
 	initialPercentage: number;
+	sessionType: 'lesson' | 'review';
 };
 
 function normalize(s: string) {
@@ -41,7 +42,7 @@ type ResultRow = {
 	attempts: number;
 };
 
-export function Quiz({ items, initialPercentage }: Props) {
+export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const router = useRouter();
 
 	// progress setup
@@ -74,8 +75,10 @@ export function Quiz({ items, initialPercentage }: Props) {
 	const current = items[currentIndex];
 
 	const total = items.length;
-	const correct = rows.filter((r) => r.correct).length;
-	const remaining = Math.max(0, total - correct);
+	const correct = rows.filter((r) => r.firstTryCorrect).length;
+	const firstTryCorrect = rows.filter((r) => r.firstTryCorrect).length;
+	const solved = rows.filter((r) => r.correct).length;
+	const remaining = Math.max(0, total - solved);
 
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
@@ -151,20 +154,28 @@ export function Quiz({ items, initialPercentage }: Props) {
 		if (!done) return;
 
 		const correctIds = rows.filter((r) => r.correct).map((r) => r.id);
+		const upIds = rows.filter((r) => r.firstTryCorrect).map((r) => r.id);
+		const downIds = rows.filter((r) => !r.firstTryCorrect).map((r) => r.id);
 
 		(async () => {
 			try {
-				if (correctIds.length) {
-					await incrementSrsOnCompletion({ vocabIds: correctIds });
+				if (sessionType === 'lesson') {
+					if (correctIds.length) {
+						await setSrsToOne({ vocabIds: correctIds });
+					}
+				} else {
+					if (upIds.length || downIds.length) {
+						await applyReviewSrs({ upIds, downIds });
+					}
 				}
 			} catch (e) {
 				console.error('SRS update failed', e);
 			}
 
 			const summary = {
-				total: items.length,
-				correct: rows.filter((r) => r.correct).length,
-				firstTryCorrect: rows.filter((r) => r.firstTryCorrect).length,
+				total,
+				correct: firstTryCorrect,
+				firstTryCorrect,
 				progressEnd: progress,
 				rows
 			};
@@ -177,7 +188,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 
 			router.replace('/learn/summary');
 		})();
-	}, [done, items.length, rows, progress, router]);
+	}, [done, rows, progress, router, sessionType]);
 
 	if (done) {
 		return (

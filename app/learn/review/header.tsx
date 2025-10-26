@@ -15,28 +15,31 @@ export const Header = ({ percentage, correct, total, remaining }: Props) => {
 	const { open } = useExitModal();
 
 	return (
-		<header className="mx-auto flex w-full max-w-[1000px] items-center justify-between gap-x-7 px-10 pt-[20px] lg:pt-[50px]">
-			<X onClick={open} className="cursor-pointer text-slate-500 transition hover:opacity-75" />
-			<Settings
-				onClick={open}
-				className="cursor-pointer text-slate-500 transition hover:opacity-75"
-			/>
-
-			<div className="flex flex-1 justify-center">
-				<Progress value={percentage} className="w-[600px] max-w-full" />
+		<header className="relative mx-auto flex w-full max-w-[1200px] items-center justify-between px-10 pt-[20px] lg:pt-[50px]">
+			<div className="gap-15 flex items-center">
+				<X
+					onClick={open}
+					className="h-6 w-6 cursor-pointer text-slate-500 transition hover:opacity-75"
+				/>
+				<Settings
+					onClick={open}
+					className="h-6 w-6 cursor-pointer text-slate-500 transition hover:opacity-75"
+				/>
 			</div>
 
-			<div className="ml-auto flex items-center gap-6">
+			<div className="absolute left-1/2 w-[600px] max-w-[80vw] -translate-x-1/2 -translate-y-1/2">
+				<Progress value={percentage} />
+			</div>
+
+			<div className="ml-auto flex items-center gap-8">
 				<div className="text-right">
-					<div className="text-lg font-semibold text-slate-800">
+					<div className="text-2xl font-semibold text-slate-800">
 						{correct}/{total}
 					</div>
 				</div>
-				<div className="relative block">
-					<Image className="hover:opacity-75" src="/inbox.svg" alt="Inbox" height={70} width={70} />
-					<span className="absolute -right-2 -top-2 min-w-[20px] rounded-full bg-red-500 px-1.5 py-[1px] text-center text-xs font-bold text-white">
-						{remaining}
-					</span>
+				<div className="flex items-center">
+					<Image src="/inbox.svg" alt="Inbox" height={60} width={60} />
+					<span className="text-2xl font-bold text-slate-700">{remaining}</span>
 				</div>
 			</div>
 		</header>
