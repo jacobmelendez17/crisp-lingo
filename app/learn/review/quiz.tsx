@@ -73,6 +73,10 @@ export function Quiz({ items, initialPercentage }: Props) {
 	const currentIndex = queue[cursor];
 	const current = items[currentIndex];
 
+	const total = items.length;
+	const correct = rows.filter((r) => r.correct).length;
+	const remaining = Math.max(0, total - correct);
+
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
 		return current.translation
@@ -178,7 +182,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 	if (done) {
 		return (
 			<>
-				<Header percentage={progress} />
+				<Header percentage={progress} total={total} correct={correct} remaining={remaining} />
 				<main className="flex min-h-[calc(100vh-100px)] items-center justify-center p-6">
 					<p className="text-neutral-600">Finishing up...</p>
 				</main>
@@ -192,7 +196,7 @@ export function Quiz({ items, initialPercentage }: Props) {
 
 	return (
 		<>
-			<Header percentage={progress} />
+			<Header percentage={progress} total={total} correct={correct} remaining={remaining} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
 				{/* ✅ word image */}
