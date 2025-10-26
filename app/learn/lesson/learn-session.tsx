@@ -35,7 +35,7 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const total = batch.length;
 	const current = batch[currentIndex];
-	const quizHref = `/learn/review?id=${batch.map((b) => b.id).join(',')}`;
+	const quizHref = `/learn/quiz?type=lesson&id=${batch.map((b) => b.id).join(',')}`;
 
 	const tabs: Array<{ key: 'meaning' | 'reading' | 'context'; label: string }> = [
 		{ key: 'meaning', label: 'meaning' },

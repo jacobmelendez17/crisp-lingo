@@ -13,26 +13,30 @@ export async function setSrsToOne({ vocabIds }: { vocabIds: number[] }) {
   const { userId } = await auth();
   if (!userId || !vocabIds?.length) return;
 
-  // Upsert to level 1. Also backfill firstLearnedAt if it was null.
+  // Upsert to srsLevel = 1. Also fill timestamps.
   await db
     .insert(userVocabSrs)
-    .values(vocabIds.map((id) => ({
-      userId,
-      vocabId: id,
-      srsLevel: 1,
-      firstLearnedAt: new Date(),
-      nextReviewAt: sql`NOW()` // or NOW() + interval for level 1 if you want
-    })))
+    .values(
+      vocabIds.map((id) => ({
+        userId,
+        vocabId: id,
+        srsLevel: 1, // force stage 1 even on first insert
+        firstLearnedAt: new Date(),
+        lastReviewedAt: new Date(),
+        nextReviewAt: sql`NOW() + INTERVAL '4 hours'` // optional interval
+      }))
+    )
     .onConflictDoUpdate({
       target: [userVocabSrs.userId, userVocabSrs.vocabId],
       set: {
         srsLevel: 1,
-        // only set firstLearnedAt if it was null previously
         firstLearnedAt: sql`COALESCE(${userVocabSrs.firstLearnedAt}, NOW())`,
-        nextReviewAt: sql`NOW()` // or schedule e.g. NOW() + INTERVAL '4 hours'
+        lastReviewedAt: sql`NOW()`,
+        nextReviewAt: sql`NOW() + INTERVAL '4 hours'` // optional
       }
     });
 }
+
 
 
 export async function applyReviewSrs({

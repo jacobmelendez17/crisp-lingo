@@ -75,10 +75,10 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const current = items[currentIndex];
 
 	const total = items.length;
-	const correct = rows.filter((r) => r.firstTryCorrect).length;
+	const correct = rows.filter((r) => r.correct).length;
 	const firstTryCorrect = rows.filter((r) => r.firstTryCorrect).length;
-	const solved = rows.filter((r) => r.correct).length;
-	const remaining = Math.max(0, total - solved);
+	const correctForLesson = sessionType === 'review' ? firstTryCorrect : correct;
+	const remaining = Math.max(0, total - correct);
 
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
@@ -100,12 +100,22 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 			[current.id]: (prev[current.id] ?? 0) + 1
 		}));
 
-		setFirstTry((prev) =>
-			prev[current.id] !== undefined ? prev : { ...prev, [current.id]: isCorrect }
-		);
+		// Only record first-try for review sessions
+		if (sessionType === 'review') {
+			setFirstTry((prev) =>
+				prev[current.id] !== undefined ? prev : { ...prev, [current.id]: isCorrect }
+			);
+		}
 
 		setRows((prev) => {
+			const existing = prev.find((r) => r.id === current.id);
 			const filtered = prev.filter((r) => r.id !== current.id);
+
+			const firstTryCorrectValue =
+				sessionType === 'review'
+					? (existing?.firstTryCorrect ?? isCorrect) // review: keep first-try truth
+					: false; // lesson: ignore first-try entirely
+
 			return [
 				...filtered,
 				{
@@ -114,7 +124,7 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 					expected: current.translation,
 					userAnswer: guessRaw,
 					correct: isCorrect,
-					firstTryCorrect: prev.find((r) => r.id === current.id)?.firstTryCorrect ?? isCorrect,
+					firstTryCorrect: firstTryCorrectValue,
 					attempts: (attempts[current.id] ?? 0) + 1
 				}
 			];
@@ -123,7 +133,6 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		if (isCorrect) {
 			setStatus('correct');
 
-			// only award progress once
 			if (!awarded[current.id]) {
 				setProgress((p) => Math.min(100, p + step));
 				setAwarded((prev) => ({ ...prev, [current.id]: true }));
@@ -193,7 +202,12 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	if (done) {
 		return (
 			<>
-				<Header percentage={progress} total={total} correct={correct} remaining={remaining} />
+				<Header
+					percentage={progress}
+					total={total}
+					correct={correctForLesson}
+					remaining={remaining}
+				/>
 				<main className="flex min-h-[calc(100vh-100px)] items-center justify-center p-6">
 					<p className="text-neutral-600">Finishing up...</p>
 				</main>
@@ -210,7 +224,6 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 			<Header percentage={progress} total={total} correct={correct} remaining={remaining} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
-				{/* ✅ word image */}
 				{current.imageUrl ? (
 					<div className="mb-4 h-28 w-28">
 						<Image

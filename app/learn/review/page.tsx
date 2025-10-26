@@ -29,5 +29,5 @@ export default async function ReviewPage({ searchParams }: PageProps) {
 
 	if (!items.length) return null;
 
-	return <Quiz items={items} initialPercentage={initialPercentage} />;
+	return <Quiz items={items} initialPercentage={initialPercentage} sessionType="review" />;
 }
