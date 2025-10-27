@@ -73,6 +73,7 @@ export const userVocabSrs = pgTable("user_vocab_srs", {
 (t) => [
     primaryKey({ columns: [t.userId, t.vocabId], name: "user_vocab_srs_pk" }),
     index("user_vocab_srs_pts_idx").on(t.userId, t.srsLevel),
+    index("user_vocab_srs_due_idx").on(t.userId, t.nextReviewAt),
   ]
 );
 

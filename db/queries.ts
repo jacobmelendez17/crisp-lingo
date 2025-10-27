@@ -7,6 +7,7 @@ import {
   or,
   isNull,
   count,
+  lte,
   sql,
 } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
@@ -21,7 +22,6 @@ import {
   levels,
 } from "@/db/schema";
 
-/* ----------------------------- USER PROGRESS ----------------------------- */
 
 export const getUserProgress = async () => {
   const userId = await getActiveUserId();
@@ -32,10 +32,8 @@ export const getUserProgress = async () => {
   });
 };
 
-/* --------------------------- GENERIC BATCH FETCH -------------------------- */
 
 export const getBatch = cache(async (limit = 5) => {
-  // Generic fallback batch (used for guests or when no progress yet)
   const rows = await db
     .select()
     .from(vocab)
@@ -45,7 +43,6 @@ export const getBatch = cache(async (limit = 5) => {
   return rows;
 });
 
-/* -------------------------- FETCH VOCAB BY IDS --------------------------- */
 
 export const getVocabByIds = async (ids: number[]) => {
   if (!ids?.length) return [];
@@ -59,11 +56,6 @@ export const getVocabByIds = async (ids: number[]) => {
   return rows;
 };
 
-/* ---------------------- NEXT UNLEARNED VOCAB FOR LEVEL -------------------- */
-/**
- * Returns the next unlearned vocab items for the user's active level,
- * ordered by position. Learned = srsLevel > 0 (excluded).
- */
 export async function getNextUnlearnedBatchForLevel(
   userId: string,
   levelId: number,
@@ -92,7 +84,6 @@ export async function getNextUnlearnedBatchForLevel(
     .where(
       and(
         eq(vocab.levelId, Number(levelId)),
-        // include only words the user hasn’t learned yet
         or(isNull(userVocabSrs.srsLevel), eq(userVocabSrs.srsLevel, 0))
       )
     )
@@ -102,7 +93,6 @@ export async function getNextUnlearnedBatchForLevel(
   return rows;
 }
 
-/* ------------------------------ MAIN GETTER ------------------------------ */
 export const getNextBatch = async (size = 5) => {
   const userId = await getActiveUserId();
   if (!userId) {
@@ -115,9 +105,6 @@ export const getNextBatch = async (size = 5) => {
   if (!levelId) {
     return db.select().from(vocab).orderBy(asc(vocab.id)).limit(size);
   }
-
-  // (optional) log for debugging
-  console.log("active user:", userId, "activeLevel:", levelId);
 
   const learned = await db
     .select({ count: sql<number>`count(*)` })
@@ -162,3 +149,36 @@ export const getNextBatch = async (size = 5) => {
 
   return rows;
 };
+
+export const getDueReviews = cache(async (limit = 10) => {
+  const { userId } = await auth();
+  if (!userId) return [];
+  const now = new Date();
+
+  return db
+    .select({
+      id: vocab.id,
+      word: vocab.word,
+      translation: vocab.translation,
+      imageUrl: vocab.imageUrl,
+      srsLevel: userVocabSrs.srsLevel,
+      nextReviewAt: userVocabSrs.nextReviewAt,
+    })
+    .from(userVocabSrs)
+    .innerJoin(vocab, eq(userVocabSrs.vocabId, vocab.id))
+    .where(and(eq(userVocabSrs.userId, userId), lte(userVocabSrs.nextReviewAt, now)))
+    .orderBy(asc(userVocabSrs.nextReviewAt))
+    .limit(limit);
+});
+
+export const countDueReviews = cache(async () => {
+  const { userId } = await auth();
+  if (!userId) return 0;
+  const now = new Date();
+
+  const res = await db.execute(
+    sql`select count(*)::int as c from "user_vocab_srs" 
+    where "user_id" = ${userId} and "next_review_at" <= ${now}`
+  );
+  return (res.rows?.[0]?.c as number) ?? 0;
+});

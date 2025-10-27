@@ -1,29 +1,65 @@
-import { Quiz } from '../review/quiz'; // or adjust the import path
-import { getVocabByIds, getNextBatch } from '@/db/queries';
+// app/learn/quiz/page.tsx
+import { notFound } from 'next/navigation';
+import { Quiz } from '../review/quiz'; // keep your import
+import { getVocabByIds, getDueReviews } from '@/db/queries';
 
 type PageProps = {
-	searchParams?: Record<string, string | string[] | undefined>;
+	searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function LearnQuizPage({ searchParams = {} }: PageProps) {
-	const idsParam = (searchParams.ids ?? searchParams.id ?? '') as string;
-	const type = (searchParams.type ?? 'lesson') as 'lesson' | 'review';
+function firstStr(v: string | string[] | undefined, fallback = ''): string {
+	if (Array.isArray(v)) return v[0] ?? fallback;
+	return (v as string) ?? fallback;
+}
 
-	const ids = String(idsParam)
+export default async function LearnQuizPage({ searchParams }: PageProps) {
+	// ✅ await first (new Next.js requirement)
+	const params = await searchParams;
+
+	const typeParam = firstStr(params.type, 'lesson').toLowerCase();
+	const type = (typeParam === 'review' ? 'review' : 'lesson') as 'lesson' | 'review';
+
+	// support ?id= and ?ids=
+	const idsParam = firstStr(params.id) || firstStr(params.ids);
+	const ids = (idsParam || '')
 		.split(',')
 		.map((s) => parseInt(s.trim(), 10))
-		.filter((n) => Number.isFinite(n));
+		.filter(Number.isFinite);
 
-	const rows = ids.length ? await getVocabByIds(ids) : await getNextBatch(5);
+	let rows: Array<{
+		id: number;
+		word: string;
+		translation: string;
+		imageUrl: string | null;
+	}> | null = null;
 
-	const items = rows.map((r: any) => ({
-		id: r.id,
-		word: r.word,
-		translation: r.translation,
-		imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
-	}));
+	if (type === 'lesson') {
+		if (!ids.length) return notFound();
+		const vocabRows = await getVocabByIds(ids);
+		rows = vocabRows.map((r) => ({
+			id: r.id,
+			word: r.word,
+			translation: r.translation,
+			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
+		}));
+	} else {
+		const due = await getDueReviews(5);
+		if (!due.length) {
+			return (
+				<main className="mx-auto max-w-screen-md p-6 text-center">
+					<h1 className="mb-2 text-2xl font-semibold text-neutral-800">No reviews due</h1>
+					<p className="text-neutral-600">Check back later or learn new items to unlock reviews.</p>
+				</main>
+			);
+		}
+		rows = due.map((r) => ({
+			id: r.id,
+			word: r.word,
+			translation: r.translation,
+			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
+		}));
+	}
 
-	if (!items.length) return null;
-
-	return <Quiz items={items} initialPercentage={0} sessionType={type} />;
+	if (!rows?.length) return null;
+	return <Quiz items={rows} initialPercentage={0} sessionType={type} />;
 }
