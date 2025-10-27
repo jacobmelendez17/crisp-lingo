@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { auth } from '@clerk/nextjs/server';
 import { asc, and, eq, sql } from 'drizzle-orm';
+import { Button } from '@/components/ui/button';
 
 import db from '@/db/drizzle';
 import { vocab, userVocabSrs } from '@/db/schema';
@@ -8,7 +9,6 @@ import { vocab, userVocabSrs } from '@/db/schema';
 export default async function VocabularyPage() {
 	const { userId } = await auth();
 
-	// Build a query that returns every vocab row + the user's SRS level (or 0)
 	const rows = userId
 		? await db
 				.select({
@@ -37,7 +37,25 @@ export default async function VocabularyPage() {
 
 	return (
 		<main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
-			<h1 className="pt-2 text-2xl font-bold text-neutral-800">Vocabulary</h1>
+			<div className="flex flex-col items-center justify-center text-center">
+				<h1 className="pt-2 text-5xl font-bold text-neutral-800">Vocabulary</h1>
+
+				<div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+					<Button>1-10</Button>
+					<Button>11-20</Button>
+					<Button>21-30</Button>
+					<Button>31-40</Button>
+					<Button>41-50</Button>
+				</div>
+			</div>
+
+			<div
+				className="my-6 h-[2px] w-full"
+				style={{
+					backgroundImage:
+						'repeating-linear-gradient(to right, #a3c1ad 0 10px, transparent 10px 20px)'
+				}}
+			/>
 
 			<div className="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{rows.map((r) => {

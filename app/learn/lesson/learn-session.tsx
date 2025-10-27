@@ -62,7 +62,13 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					<h1 className="text-4xl font-bold text-neutral-800">{current.word}</h1>
 				</section>
 
-				<div className="border-t-7 mt-4 border-dotted border-[#a3c1ad]" />
+				<div
+					className="my-4 h-[2px] w-full"
+					style={{
+						backgroundImage:
+							'repeating-linear-gradient(to right, #a3c1ad 0 10px, transparent 10px 20px)'
+					}}
+				/>
 
 				{/* TODO: Fix the slider so it is centered with the tabs and matches color. Might need to change color*/}
 				<div className="gap-30 relative mx-auto flex w-fit items-center justify-center rounded-[28px] bg-transparent p-1">
@@ -105,7 +111,13 @@ export const LearnSession = ({ initialPercentage, batch }: Props) => {
 					</Button>
 				</div>
 
-				<div className="border-t-7 border-dotted border-[#a3c1ad]" />
+				<div
+					className="my-4 h-[2px] w-full"
+					style={{
+						backgroundImage:
+							'repeating-linear-gradient(to right, #a3c1ad 0 10px, transparent 10px 20px)'
+					}}
+				/>
 
 				{activeTab === 'meaning' && <MeaningTab item={current} />}
 				{activeTab === 'reading' && <ReadingTab item={current} />}
