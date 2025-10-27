@@ -1,4 +1,3 @@
-// app/(app)/actions/srs.ts
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
@@ -13,7 +12,6 @@ export async function setSrsToOne({ vocabIds }: { vocabIds: number[] }) {
   const { userId } = await auth();
   if (!userId || !vocabIds?.length) return;
 
-  // Upsert to srsLevel = 1. Also fill timestamps.
   await db
     .insert(userVocabSrs)
     .values(
