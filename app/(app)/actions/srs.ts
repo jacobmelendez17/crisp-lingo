@@ -8,8 +8,8 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 const MAX_LEVEL = 8;
 const MIN_LEVEL = 1;
 
-const IS_DEBUG = process.env.SRS_DEBUG === 'true';
-const L1_INTERVAL_SQL = IS_DEBUG ? sql`INTERVAL '1 minute'` : sql`INTERVAL '4 hours'`;
+const IS_DEBUG = process.env.SRS_DEBUG === 'false';
+const L1_INTERVAL_SQL = IS_DEBUG ? sql`INTERVAL '1 minute'` : sql`INTERVAL '1 minute'`;
 
 // Intervals for promotion: based on the *new* level after +1
 const INTERVAL_CASE_UP = sql`
@@ -27,7 +27,7 @@ const INTERVAL_CASE_UP = sql`
 
 // Intervals for demotion: based on the *new* level after -1
 const INTERVAL_CASE_DOWN = sql`
-  CASE GREATEST(${userVocabSrs.srsLevel} - 1, ${MIN_LEVEL})  -- ✅ GREATEST (floor at 1)
+  CASE GREATEST(${userVocabSrs.srsLevel} - 1, ${MIN_LEVEL}) 
     WHEN 1 THEN ${L1_INTERVAL_SQL}
     WHEN 2 THEN INTERVAL '8 hours'
     WHEN 3 THEN INTERVAL '1 day'
@@ -71,12 +71,6 @@ export async function setSrsToOne({ vocabIds }: { vocabIds: number[] }) {
     });
 }
 
-/**
- * Apply review results:
- *  - upIds: promote, set nextReviewAt using INTERVAL_CASE_UP
- *  - downIds: demote (floor 1), set nextReviewAt using INTERVAL_CASE_DOWN
- * Ensures rows exist first.
- */
 export async function applyReviewSrs({
   upIds = [],
   downIds = [],

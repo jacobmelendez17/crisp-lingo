@@ -8,7 +8,7 @@ export function LearnCard() {
 
 			<div className="flex flex-row gap-3">
 				<LearnButton href="/learn/lesson" label="Start Lessons" />
-				<LearnButton href="/" label="Advanced" />
+				<LearnButton href="/" label="Customize Lessons" />
 			</div>
 		</CardShell>
 	);
