@@ -43,7 +43,7 @@ export default async function LearnQuizPage({ searchParams }: PageProps) {
 			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
 		}));
 	} else {
-		const due = await getDueReviews(5);
+		const due = await getDueReviews();
 		if (!due.length) {
 			return (
 				<main className="mx-auto max-w-screen-md p-6 text-center">

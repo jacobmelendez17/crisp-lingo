@@ -150,12 +150,12 @@ export const getNextBatch = async (size = 5) => {
   return rows;
 };
 
-export const getDueReviews = cache(async (limit = 10) => {
+export const getDueReviews = cache(async (limit?: number) => {
   const { userId } = await auth();
   if (!userId) return [];
   const now = new Date();
 
-  return db
+  let base = db
     .select({
       id: vocab.id,
       word: vocab.word,
@@ -167,8 +167,13 @@ export const getDueReviews = cache(async (limit = 10) => {
     .from(userVocabSrs)
     .innerJoin(vocab, eq(userVocabSrs.vocabId, vocab.id))
     .where(and(eq(userVocabSrs.userId, userId), lte(userVocabSrs.nextReviewAt, now)))
-    .orderBy(asc(userVocabSrs.nextReviewAt))
-    .limit(limit);
+    .orderBy(asc(userVocabSrs.nextReviewAt));
+
+    if (typeof limit === 'number') {
+      return base.limit(limit);
+    }
+
+    return base;
 });
 
 export const countDueReviews = cache(async () => {
