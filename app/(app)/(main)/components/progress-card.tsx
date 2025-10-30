@@ -22,9 +22,15 @@ export function ProgressCard() {
 					>
 						<div className="mx-auto w-full max-w-[220px] rounded-lg border border-black/5 bg-white text-neutral-700 shadow-sm">
 							<div className="grid divide-y divide-gray-200">
-								<div className="px-4 py-3 text-sm font-medium">Vocabulary</div>
-								<div className="px-4 py-3 text-sm font-medium">Grammer</div>
-								<div className="px-4 py-3 text-sm font-medium">Speaking</div>
+								<div className="flex items-center justify-between px-4 py-3 text-sm font-medium">
+									<span>Vocabulary</span>
+								</div>
+								<div className="flex items-center justify-between px-4 py-3 text-sm font-medium">
+									<span>Grammar</span>
+								</div>
+								<div className="flex items-center justify-between px-4 py-3 text-sm font-medium">
+									<span>Listening</span>
+								</div>
 							</div>
 						</div>
 					</CardShell>
