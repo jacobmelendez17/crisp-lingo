@@ -33,7 +33,7 @@ export default async function VocabularyPage() {
 					translation: vocab.translation,
 					imageUrl: vocab.imageUrl,
 					srsLevel: sql<number>`COALESCE(${userVocabSrs.srsLevel}, 0)`,
-					nextReviewAt: userVocabSrs.nextReviewAt // <-- add this
+					nextReviewAt: userVocabSrs.nextReviewAt
 				})
 				.from(vocab)
 				.leftJoin(
@@ -48,8 +48,7 @@ export default async function VocabularyPage() {
 					translation: vocab.translation,
 					imageUrl: vocab.imageUrl,
 					srsLevel: sql<number>`0`,
-					// return NULL for guests so UI shows "—"
-					nextReviewAt: sql<Date>`NULL` // <-- add this
+					nextReviewAt: sql<Date>`NULL`
 				})
 				.from(vocab)
 				.orderBy(asc(vocab.levelId), asc(vocab.position), asc(vocab.id));
@@ -76,7 +75,7 @@ export default async function VocabularyPage() {
 				}}
 			/>
 
-			<div className="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+			<div className="mt-8 grid justify-items-center gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
 				{rows.map((r) => {
 					const img = r.imageUrl
 						? r.imageUrl.startsWith('/')
@@ -87,33 +86,19 @@ export default async function VocabularyPage() {
 					return (
 						<div
 							key={r.id}
-							className="group rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+							className="group w-full max-w-[220px] rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm transition hover:shadow-md"
 						>
-							<div className="mb-3 flex items-center gap-3">
-								<div className="grid h-16 w-16 place-items-center overflow-hidden rounded-xl bg-neutral-50">
-									<Image
-										src={img}
-										alt={r.word}
-										width={64}
-										height={64}
-										className="h-16 w-16 object-contain"
-									/>
-								</div>
-
-								<div className="ml-auto text-right">
-									<div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-										SRS {r.srsLevel}
-									</div>
-									<div
-										className="mt-1 text-[11px] font-medium text-neutral-500"
-										title={r.nextReviewAt ? new Date(r.nextReviewAt).toLocaleString() : ''}
-									>
-										Next review: {formatNextReview(r.nextReviewAt as unknown as Date | null)}
-									</div>
-								</div>
+							<div className="mx-auto grid h-24 w-24 place-items-center overflow-hidden rounded-xl bg-neutral-50">
+								<Image
+									src={img}
+									alt={r.word}
+									width={96}
+									height={96}
+									className="h-24 w-24 object-contain"
+								/>
 							</div>
 
-							<div className="space-y-1">
+							<div className="mt-3 space-y-1">
 								<div className="text-lg font-semibold text-neutral-800">{r.word}</div>
 								<div className="text-sm text-neutral-600">{r.translation}</div>
 							</div>
