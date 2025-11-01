@@ -46,13 +46,13 @@ export function ForecastCard() {
 				label: 'Reviews',
 				data:
 					mode === 'daily' ? [12, 18, 9, 22, 16, 14, 20] : [2, 4, 3, 6, 5, 4, 3, 7, 9, 13, 5, 2],
-				backgroundColor: 'rgba(239, 68, 68, 0.8)', // red
+				backgroundColor: '#b8d19f',
 				borderRadius: 6
 			},
 			{
 				label: 'Learn',
 				data: mode === 'daily' ? [3, 5, 2, 6, 4, 4, 7] : [1, 2, 1, 3, 2, 1, 2, 4, 7, 13, 6, 5, 4],
-				backgroundColor: 'rgba(147, 51, 234, 0.8)', // purple
+				backgroundColor: '#678b5b',
 				borderRadius: 6
 			}
 		]

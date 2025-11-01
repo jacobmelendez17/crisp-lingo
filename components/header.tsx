@@ -14,7 +14,7 @@ export const Header = () => {
 			<div className="mx-auto flex h-full items-center justify-between lg:max-w-screen-lg">
 				<div className="flex items-center gap-x-3 pb-7 pt-8">
 					<Image
-						src="/mascot.svg"
+						src="/otter.svg"
 						alt="Crisp Lingo Otter"
 						width={40}
 						height={40}

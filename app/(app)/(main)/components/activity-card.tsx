@@ -23,8 +23,8 @@ const data = {
 		{
 			label: 'Vocab',
 			data: [2, 3, 4, 5, 7, 1],
-			borderColor: '#8b5cf6',
-			backgroundColor: 'rgba(139,92,246,0.2)',
+			borderColor: '#b8d19f',
+			backgroundColor: 'rgba(189,209,159,0.2)',
 			tension: 0.4,
 			fill: true,
 			pointRadius: 0
@@ -32,8 +32,8 @@ const data = {
 		{
 			label: 'Grammar',
 			data: [1, 2, 3, 4, 5, 6],
-			borderColor: '#ef4444',
-			backgroundColor: 'rgba(239,68,68,0.2)',
+			borderColor: '##678b5b',
+			backgroundColor: 'rgba(103,139,91,0.2)',
 			tension: 0.4,
 			fill: true,
 			pointRadius: 0
