@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { auth } from '@clerk/nextjs/server';
 import { asc, and, eq, sql } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 import db from '@/db/drizzle';
 import { vocab, userVocabSrs } from '@/db/schema';
@@ -84,25 +85,27 @@ export default async function VocabularyPage() {
 						: '/mascot.svg';
 
 					return (
-						<div
-							key={r.id}
-							className="group w-full max-w-[220px] rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm transition hover:shadow-md"
-						>
-							<div className="mx-auto grid h-24 w-24 place-items-center overflow-hidden rounded-xl bg-neutral-50">
-								<Image
-									src={img}
-									alt={r.word}
-									width={96}
-									height={96}
-									className="h-24 w-24 object-contain"
-								/>
-							</div>
+						<Link href={`/vocabulary/${encodeURIComponent(r.word)}`} className="block">
+							<div
+								key={r.id}
+								className="group w-full max-w-[440px] rounded-2xl border border-black/5 bg-white p-1 text-center shadow-sm transition hover:shadow-lg"
+							>
+								<div className="mx-auto grid h-24 w-24 place-items-center overflow-hidden rounded-xl bg-neutral-50">
+									<Image
+										src={img}
+										alt={r.word}
+										width={96}
+										height={96}
+										className="h-24 w-24 object-contain"
+									/>
+								</div>
 
-							<div className="mt-3 space-y-1">
-								<div className="text-lg font-semibold text-neutral-800">{r.word}</div>
-								<div className="text-sm text-neutral-600">{r.translation}</div>
+								<div className="mt-3 space-y-1">
+									<div className="text-lg font-semibold text-neutral-800">{r.word}</div>
+									<div className="text-sm text-neutral-600">{r.translation}</div>
+								</div>
 							</div>
-						</div>
+						</Link>
 					);
 				})}
 			</div>
