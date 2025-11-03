@@ -1,16 +1,16 @@
+// app/(app)/vocabulary/page.tsx  (only header area shown; rest of file unchanged)
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
-
 import { LevelSection } from '@/components/learn/LevelSection';
 import { LearnCardGrid } from '@/components/learn/LearnCardGrid';
 import { LearnList } from '@/components/learn/LearnList';
+import { ViewToggle } from '@/components/learn/ViewToggle';
 import type { LearnItem } from '@/components/learn/types';
 import { IMAGE, BRAND } from '@/lib/constants';
 import { LEVEL_RANGES, parseRangeKey } from '@/lib/learn/ranges';
 import { groupByLevelId } from '@/lib/learn/group';
 import { fetchLevels, sliceLevels, fetchVocabForLevels } from '@/lib/learn/fetch';
-import { ViewToggle } from '@/components/learn/ViewToggle';
 
 type PageProps = { searchParams: Promise<{ range?: string; view?: 'cards' | 'list' }> };
 
@@ -27,22 +27,17 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 	const rows = await fetchVocabForLevels(selectedIds, userId);
 	const groups = groupByLevelId(rows);
 
-	// Hrefs for the sliding toggle (preserve current range)
 	const hrefCards = key === '1-10' ? '/vocabulary' : `/vocabulary?range=${key}`;
 	const hrefList = key === '1-10' ? '/vocabulary?view=list' : `/vocabulary?range=${key}&view=list`;
 
 	return (
 		<main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
 			{/* Title */}
-			<div className="flex items-center justify-between gap-4">
-				<h1 className="pt-2 text-5xl font-bold text-neutral-800">Vocabulary</h1>
+			<h1 className="pt-2 text-center text-5xl font-bold text-neutral-800">Vocabulary</h1>
 
-				{/* Right-justified sliding toggle */}
-				<ViewToggle active={view} hrefCards={hrefCards} hrefList={hrefList} />
-			</div>
-
-			{/* Level ranges centered beneath (or change to justify-start for left align) */}
-			<div className="mt-4 flex w-full items-center justify-center">
+			{/* Controls row: center range buttons, toggle on the right */}
+			<div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center">
+				<div /> {/* left spacer */}
 				<div className="flex flex-wrap items-center justify-center gap-2">
 					{LEVEL_RANGES.map((r) => {
 						const href =
@@ -66,17 +61,22 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 						);
 					})}
 				</div>
+				<div className="justify-self-end">
+					<ViewToggle active={view} hrefCards={hrefCards} hrefList={hrefList} />
+				</div>
 			</div>
 
-			{/* Sections */}
+			{/* ...keep the rest of your sections rendering as-is... */}
+
+			{/* Level Sections */}
 			{selected.map((lvl, idx) => {
 				const rowsForLevel = groups.get(lvl.id) ?? [];
 				const items: LearnItem[] = rowsForLevel.map((r) => ({
 					id: r.id,
 					href: `/vocabulary/${encodeURIComponent(r.word)}`,
 					imageUrl: r.imageUrl || undefined,
-					primary: r.word, // RIGHT in list
-					secondary: r.translation // LEFT in list
+					primary: r.word,
+					secondary: r.translation
 				}));
 
 				const isEmpty = items.length === 0;

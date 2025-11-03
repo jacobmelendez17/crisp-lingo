@@ -1,48 +1,67 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { LayoutGrid, List as ListIcon } from 'lucide-react';
 
 export function ViewToggle({
 	active,
 	hrefCards,
-	hrefList
+	hrefList,
+	color = '#b8d9b3'
 }: {
 	active: 'cards' | 'list';
 	hrefCards: string;
 	hrefList: string;
+	color?: string;
 }) {
 	return (
-		<div className="relative inline-flex h-10 w-[180px] items-center rounded-[28px] border border-black/10 bg-white">
-			{/* Sliding pill */}
+		<div
+			className="relative inline-flex h-10 w-[120px] items-center rounded-full bg-white shadow-sm"
+			aria-label="Toggle view"
+			role="tablist"
+		>
+			{/* Sliding green pill */}
 			<span
-				className="absolute inset-y-1 left-1 w-1/2 rounded-[24px] bg-[#b8d9b3] transition-transform duration-300 ease-out"
-				style={{ transform: active === 'cards' ? 'translateX(0%)' : 'translateX(100%)' }}
+				className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out"
+				style={{
+					backgroundColor: color,
+					transform: active === 'cards' ? 'translateX(0%)' : 'translateX(100%)'
+				}}
 				aria-hidden
 			/>
 
-			<Link href={hrefCards} className="relative z-10 w-1/2">
-				<Button
-					size="sm"
-					variant="outline"
-					className={`w-full rounded-[24px] text-sm ${
-						active === 'cards' ? 'text-neutral-900' : 'text-neutral-700'
+			{/* Cards icon */}
+			<Link
+				href={hrefCards}
+				role="tab"
+				aria-selected={active === 'cards'}
+				className="relative z-10 flex w-1/2 items-center justify-center"
+				title="Cards"
+			>
+				<LayoutGrid
+					className={`h-5 w-5 transition-colors duration-200 ${
+						active === 'cards' ? 'text-neutral-900' : 'text-neutral-600'
 					}`}
-				>
-					Cards
-				</Button>
+					strokeWidth={2}
+				/>
+				<span className="sr-only">Cards view</span>
 			</Link>
 
-			<Link href={hrefList} className="relative z-10 w-1/2">
-				<Button
-					size="sm"
-					variant="outline"
-					className={`w-full rounded-[24px] text-sm ${
-						active === 'list' ? 'text-neutral-900' : 'text-neutral-700'
+			{/* List icon */}
+			<Link
+				href={hrefList}
+				role="tab"
+				aria-selected={active === 'list'}
+				className="relative z-10 flex w-1/2 items-center justify-center"
+				title="List"
+			>
+				<ListIcon
+					className={`h-5 w-5 transition-colors duration-200 ${
+						active === 'list' ? 'text-neutral-900' : 'text-neutral-600'
 					}`}
-				>
-					List
-				</Button>
+					strokeWidth={2}
+				/>
+				<span className="sr-only">List view</span>
 			</Link>
 		</div>
 	);

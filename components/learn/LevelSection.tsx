@@ -1,3 +1,4 @@
+// src/components/learn/LevelSection.tsx
 import { ReactNode } from 'react';
 
 export function LevelSection({
@@ -6,7 +7,8 @@ export function LevelSection({
 	showEmpty = false,
 	emptyText = 'Coming soon!',
 	headerBg = '#97ac82',
-	first = false
+	first = false,
+	rightSlot
 }: {
 	title: string;
 	children?: ReactNode;
@@ -14,9 +16,11 @@ export function LevelSection({
 	emptyText?: string;
 	headerBg?: string;
 	first?: boolean;
+	rightSlot?: ReactNode;
 }) {
 	return (
 		<section className={first ? 'mt-6' : 'mt-10'}>
+			{/* One row: [chip] ---- dashed ---- [optional right slot] */}
 			<div className="mb-3 flex items-center gap-3">
 				<div
 					className="rounded-full px-3 py-1 text-lg font-semibold text-white"
@@ -25,6 +29,7 @@ export function LevelSection({
 					{title}
 				</div>
 				<div className="h-px flex-1 border-t border-dashed border-black" />
+				{rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
 			</div>
 
 			{showEmpty ? (
