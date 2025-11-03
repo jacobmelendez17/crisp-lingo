@@ -1,4 +1,3 @@
-// app/(app)/grammar/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';

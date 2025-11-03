@@ -14,6 +14,12 @@ type VocabSeed = {
   level: number;
 };
 
+type GrammarSeed = {
+  title: string;
+  structure: string;
+  summary?: string;
+};
+
 // NOTE: We normalized a couple of typos from the provided list:
 // - "ten  diez" -> Spanish word is "diez", translation "ten"
 // - "la woman  mujer" -> Spanish word is "mujer", translation "woman"
@@ -91,6 +97,21 @@ const VOCAB: VocabSeed[] = [
   { word: "feo", translation: "ugly", meaning: "unpleasant in appearance", level: 5 },
 ];
 
+const GRAMMAR: GrammarSeed[] = [
+  { title: `"el" vs "la"`, structure: `el / la + noun`, summary: `definite article “the” (masc./fem.)` },
+  { title: `y`, structure: `X y Y`, summary: `conjunction “and”` },
+  { title: `con`, structure: `con + noun/pronoun`, summary: `preposition “with”` },
+  { title: `"er" Verbs`, structure: `-er (infinitive)`, summary: `overview of -er verb group (comer, beber, leer…)` },
+  { title: `"un" & "una"`, structure: `un / una + noun`, summary: `indefinite article “a/an” (masc./fem.)` },
+  { title: `no`, structure: `no + verb`, summary: `sentence negation “no/not”` },
+  { title: `en`, structure: `en + place/object`, summary: `preposition “in/on/at”` },
+  { title: `"er" verb in "I" form (Present)`, structure: `yo: -o`, summary: `comer → yo como` },
+  { title: `"er" verb in "You" form (Present)`, structure: `tú: -es`, summary: `comer → tú comes` },
+  { title: `"er" verb in "She/He" form (Present)`, structure: `él/ella: -e`, summary: `comer → él/ella come` },
+  { title: `o`, structure: `X o Y`, summary: `conjunction “or”` },
+  { title: `-o, -a Adjective Agreement`, structure: `adj -o/-a ↔ noun gender`, summary: `basic gender agreement (niño alto / niña alta)` },
+];	
+
 const chunk = <T,>(arr: T[], size: number): T[][] => {
   const res: T[][] = [];
   for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
@@ -155,6 +176,18 @@ const main = async () => {
         });
       }
     }
+
+    await db.insert(schema.grammar).values(
+      GRAMMAR.map((g, i) => ({
+        title: g.title,
+        structure: g.structure,
+        summary: g.summary ?? null,
+        levelId: levelIds[0], // all level 1
+        position: i + 1,      // 1..12
+        imageUrl: null,
+        audioUrl: null,
+      }))
+    );
 
     console.log("Seeding finished.");
   } catch (error) {
