@@ -66,7 +66,7 @@ export const userVocabSrs = pgTable("user_vocab_srs", {
     userId: text("user_id").notNull(),
     vocabId: integer("vocab_id").references(() => vocab.id, { onDelete: "cascade" }).notNull(),
     srsLevel: integer("srs_level").notNull().default(0),
-    firstLearnedAt: timestamp("first_learned_at", { withTimezone: true}),
+    firstLearnedAt: timestamp("first_learned_at", { withTimezone: true }),
     lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
     nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
 },
@@ -88,10 +88,27 @@ export const grammar = pgTable("grammar", {
     partOfSpeech: varchar("part_of_speech", { length: 64 }),
     imageUrl: text("image_src"),
     audioUrl: text("audio_src"),
+    levelId: integer("level_id").references(() => levels.id, { onDelete: "cascade" }).notNull(),
+    position: integer("position").notNull(),
     meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const userGrammarSrs = pgTable("user_grammar_srs", {
+    userId: text("user_id").notNull(),
+    grammarId: integer("grammar_id").references(() => vocab.id, { onDelete: "cascade" }).notNull(),
+    srsLevel: integer("srs_level").notNull().default(0),
+    firstLearnedAt: timestamp("first_learned_at", { withTimezone: true }),
+    lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
+    nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
+},
+(t) => [
+    primaryKey({ columns: [t.userId, t.grammarId], name: "user_grammar_srs_pk" }),
+    index("user_grammar_srs_pts_idx").on(t.userId, t.srsLevel),
+    index("user_grammar_srs_due_idx").on(t.userId, t.nextReviewAt),
+    ]
+);
 
 export const userProgress = pgTable("user_progress", {
     userId: text("user_id").primaryKey(),
