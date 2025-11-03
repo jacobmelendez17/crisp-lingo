@@ -1,20 +1,24 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
 
-import { BRAND, IMAGE } from '@/lib/constants';
+import { LevelSection } from '@/components/learn/LevelSection';
+import { LearnCardGrid } from '@/components/learn/LearnCardGrid';
+import { LearnList } from '@/components/learn/LearnList';
+import type { LearnItem } from '@/components/learn/types';
+import { IMAGE, BRAND } from '@/lib/constants';
 import { LEVEL_RANGES, parseRangeKey } from '@/lib/learn/ranges';
-import { formatNextReview } from '@/lib/learn/format';
 import { groupByLevelId } from '@/lib/learn/group';
 import { fetchLevels, sliceLevels, fetchVocabForLevels } from '@/lib/learn/fetch';
+import { ViewToggle } from '@/components/learn/ViewToggle';
 
-type PageProps = { searchParams: Promise<{ range?: string }> };
+type PageProps = { searchParams: Promise<{ range?: string; view?: 'cards' | 'list' }> };
 
 export default async function VocabularyPage({ searchParams }: PageProps) {
 	const sp = await searchParams;
 	const { userId } = await auth();
 	const { start, end, key } = parseRangeKey(sp?.range);
+	const view = sp?.view === 'list' ? 'list' : 'cards';
 
 	const all = await fetchLevels();
 	const selected = await sliceLevels(all, start, end);
@@ -23,14 +27,32 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 	const rows = await fetchVocabForLevels(selectedIds, userId);
 	const groups = groupByLevelId(rows);
 
+	// Hrefs for the sliding toggle (preserve current range)
+	const hrefCards = key === '1-10' ? '/vocabulary' : `/vocabulary?range=${key}`;
+	const hrefList = key === '1-10' ? '/vocabulary?view=list' : `/vocabulary?range=${key}&view=list`;
+
 	return (
 		<main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
-			<div className="flex flex-col items-center justify-center text-center">
+			{/* Title */}
+			<div className="flex items-center justify-between gap-4">
 				<h1 className="pt-2 text-5xl font-bold text-neutral-800">Vocabulary</h1>
 
-				<div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+				{/* Right-justified sliding toggle */}
+				<ViewToggle active={view} hrefCards={hrefCards} hrefList={hrefList} />
+			</div>
+
+			{/* Level ranges centered beneath (or change to justify-start for left align) */}
+			<div className="mt-4 flex w-full items-center justify-center">
+				<div className="flex flex-wrap items-center justify-center gap-2">
 					{LEVEL_RANGES.map((r) => {
-						const href = r === '1-10' ? '/vocabulary' : `/vocabulary?range=${r}`;
+						const href =
+							r === '1-10'
+								? view === 'cards'
+									? '/vocabulary'
+									: '/vocabulary?view=list'
+								: view === 'cards'
+									? `/vocabulary?range=${r}`
+									: `/vocabulary?range=${r}&view=list`;
 						const isActive = r === key;
 						return (
 							<Link key={r} href={href}>
@@ -46,62 +68,33 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 				</div>
 			</div>
 
+			{/* Sections */}
 			{selected.map((lvl, idx) => {
-				const items = groups.get(lvl.id) ?? [];
-				return (
-					<section key={lvl.id} className={idx === 0 ? 'mt-6' : 'mt-10'}>
-						<div className="mb-3 flex items-center gap-3">
-							<div
-								className="rounded-full px-3 py-1 text-lg font-semibold text-white"
-								style={{ backgroundColor: BRAND.primary }}
-							>
-								{lvl.title || `Level ${start + idx}`}
-							</div>
-							<div className="h-px flex-1 border-t border-dashed border-black" />
-						</div>
+				const rowsForLevel = groups.get(lvl.id) ?? [];
+				const items: LearnItem[] = rowsForLevel.map((r) => ({
+					id: r.id,
+					href: `/vocabulary/${encodeURIComponent(r.word)}`,
+					imageUrl: r.imageUrl || undefined,
+					primary: r.word, // RIGHT in list
+					secondary: r.translation // LEFT in list
+				}));
 
-						{items.length === 0 ? (
-							<div className="rounded-xl border border-dashed border-black/20 bg-white p-6 text-center text-neutral-600">
-								Coming soon!
-							</div>
+				const isEmpty = items.length === 0;
+
+				return (
+					<LevelSection
+						key={lvl.id}
+						first={idx === 0}
+						title={lvl.title || `Level ${start + idx}`}
+						showEmpty={isEmpty}
+						headerBg={BRAND.primary}
+					>
+						{view === 'list' ? (
+							<LearnList items={items} imageFallback={IMAGE.fallback} />
 						) : (
-							<div className="grid grid-cols-2 justify-items-center gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10">
-								{items.map((r) => {
-									const img =
-										r.imageUrl && r.imageUrl.startsWith('/')
-											? r.imageUrl
-											: r.imageUrl
-												? `/${r.imageUrl}`
-												: IMAGE.fallback;
-									return (
-										<Link
-											key={r.id}
-											href={`/vocabulary/${encodeURIComponent(r.word)}`}
-											className="block w-full max-w-[140px]"
-										>
-											<div className="group w-full rounded-2xl border border-black/5 bg-white p-2 text-center shadow-sm transition hover:shadow-lg">
-												<div className="mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-xl bg-neutral-50">
-													<Image
-														src={img}
-														alt={r.word}
-														width={64}
-														height={64}
-														className="h-16 w-16 object-contain"
-													/>
-												</div>
-												<div className="mt-2 space-y-0.5">
-													<div className="text-base font-semibold leading-tight text-neutral-800">
-														{r.word}
-													</div>
-													<div className="text-xs text-neutral-600">{r.translation}</div>
-												</div>
-											</div>
-										</Link>
-									);
-								})}
-							</div>
+							<LearnCardGrid items={items} imageFallback={IMAGE.fallback} />
 						)}
-					</section>
+					</LevelSection>
 				);
 			})}
 		</main>
