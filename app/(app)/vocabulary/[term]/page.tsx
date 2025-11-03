@@ -27,10 +27,21 @@ export default async function VocabDetailPage({ params }: Props) {
 					<p>{row.pronunciation ?? '-'}</p>
 				</section>
 
+				<section className="rounded-xl border border-black/5 bg-transparent p-5 shadow-sm">
+					<h2 className="mb-2 text-lg font-semibold">Meaning</h2>
+					<p>{row.partOfSpeech ?? '-'}</p>
+					<p>{row.meaning ?? '-'}</p>
+				</section>
+
 				<section className="rounded-xl border border-black/5 bg-transparent p-5 shadow-sm sm:col-span-2">
 					<h2 className="mb-2 text-lg font-semibold">Example</h2>
 					<p>{row.example ?? '-'}</p>
 					<p>{row.exampleTranslation ?? '-'}</p>
+				</section>
+
+				<section className="rounded-xl border border-black/5 bg-transparent p-5 shadow-sm">
+					<h2 className="mb-2 text-lg font-semibold">More</h2>
+					<p>{row.synonyms ?? '-'}</p>
 				</section>
 			</div>
 		</main>
