@@ -1,4 +1,3 @@
-// app/(app)/vocabulary/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
@@ -17,12 +16,10 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 	const { userId } = await auth();
 	const { start, end, key } = parseRangeKey(sp?.range);
 
-	// levels
 	const all = await fetchLevels();
 	const selected = await sliceLevels(all, start, end);
 	const selectedIds = selected.map((l) => l.id);
 
-	// vocab
 	const rows = await fetchVocabForLevels(selectedIds, userId);
 	const groups = groupByLevelId(rows);
 
