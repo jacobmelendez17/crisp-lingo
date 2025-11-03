@@ -2,11 +2,11 @@ import { CardShell } from '@/components/card-shell';
 
 export function ProgressCard() {
 	const levels = [
-		{ title: 'Beginner Pup', color: 'bg-[#d7f7d2]' },
-		{ title: 'Pond Treader', color: 'bg-[#bdeeb1]' },
-		{ title: 'River Rider', color: 'bg-[#a1e192]' },
-		{ title: 'Expert Swimmer', color: 'bg-[#7ccf70]' },
-		{ title: 'Pro Diver', color: 'bg-[#5dbf52]' }
+		{ title: 'Beginner Pup', color: 'bg-[#e5d7c4]' },
+		{ title: 'Pond Treader', color: 'bg-[#cfbb99]' },
+		{ title: 'River Rider', color: 'bg-[#889063]' },
+		{ title: 'Expert Swimmer', color: 'bg-[#354024]' },
+		{ title: 'Pro Diver', color: 'bg-[#4c3d19]' }
 	];
 
 	return (
