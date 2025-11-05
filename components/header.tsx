@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { APP_TABS } from '@/lib/nav';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export const Header = () => {
 	const pathname = usePathname();
@@ -25,11 +26,11 @@ export const Header = () => {
 					</h1>
 				</div>
 
-				{/* Right side: nav */}
 				<nav className="flex items-center pb-7 pt-8">
 					<ul className="flex gap-6">
 						{APP_TABS.map((t) => {
 							const active = t.match.some((m) => pathname?.startsWith(m));
+
 							return (
 								<li key={t.href}>
 									<Link
@@ -53,6 +54,15 @@ export const Header = () => {
 							);
 						})}
 					</ul>
+					<Link href="/profile" className="group relative ml-4">
+						<Image
+							src="/profile-avatar.png" // ⬅️ replace with your actual avatar or /default-user.svg
+							alt="User profile"
+							width={38}
+							height={38}
+							className="rounded-full border-2 border-white transition-transform duration-200 group-hover:scale-105"
+						/>
+					</Link>
 				</nav>
 			</div>
 		</header>
