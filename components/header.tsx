@@ -7,8 +7,28 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+import { useEffect, useRef, useState } from 'react';
+
 export const Header = () => {
 	const pathname = usePathname();
+	const [open, setOpen] = useState(false);
+	const menuRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const onDocClick = (e: MouseEvent) => {
+			if (!menuRef.current) return;
+			if (!menuRef.current.contains(e.target as Node)) setOpen(false);
+		};
+		const onEsc = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') setOpen(false);
+		};
+		document.addEventListener('mousedown', onDocClick);
+		document.addEventListener('keydown', onEsc);
+		return () => {
+			document.removeEventListener('mousedown', onDocClick);
+			document.removeEventListener('keydown', onEsc);
+		};
+	}, []);
 
 	return (
 		<header className="h-26 w-full border-b-2 bg-[#8ca795] px-6 lg:px-8">
@@ -54,15 +74,89 @@ export const Header = () => {
 							);
 						})}
 					</ul>
-					<Link href="/profile" className="group relative ml-4">
-						<Image
-							src="/profile-avatar.png" // ⬅️ replace with your actual avatar or /default-user.svg
-							alt="User profile"
-							width={38}
-							height={38}
-							className="rounded-full border-2 border-white transition-transform duration-200 group-hover:scale-105"
-						/>
-					</Link>
+					<div className="relative ml-4" ref={menuRef}>
+						<button
+							aria-haspopup="menu"
+							aria-expanded={open}
+							onClick={() => setOpen((v) => !v)}
+							className="rounded-full border-2 border-white outline-none ring-offset-2 transition-transform hover:scale-105 focus:ring-2 focus:ring-white/60"
+						>
+							<Image
+								src="/profile-avatar.png" // swap for your dynamic avatar if you have one
+								alt="Open profile menu"
+								width={40}
+								height={40}
+								className="rounded-full"
+							/>
+						</button>
+
+						{open && (
+							<div
+								role="menu"
+								aria-label="Profile"
+								className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-black/10 bg-white/95 shadow-lg backdrop-blur-sm"
+							>
+								<div className="px-4 py-3 text-sm">
+									<p className="font-semibold text-neutral-900">Signed in as</p>
+									<p className="truncate text-neutral-600">you@example.com</p>
+								</div>
+								<div className="h-px bg-black/10" />
+								<ul className="py-1 text-[15px]">
+									<li>
+										<Link
+											href="/account"
+											role="menuitem"
+											className="block px-4 py-2 hover:bg-neutral-100"
+											onClick={() => setOpen(false)}
+										>
+											Profile
+										</Link>
+									</li>
+									<li>
+										<Link
+											href="/settings"
+											role="menuitem"
+											className="block px-4 py-2 hover:bg-neutral-100"
+											onClick={() => setOpen(false)}
+										>
+											Settings
+										</Link>
+									</li>
+									<li>
+										<Link
+											href="/billing"
+											role="menuitem"
+											className="block px-4 py-2 hover:bg-neutral-100"
+											onClick={() => setOpen(false)}
+										>
+											Billing
+										</Link>
+									</li>
+									<li>
+										<Link
+											href="/help"
+											role="menuitem"
+											className="block px-4 py-2 hover:bg-neutral-100"
+											onClick={() => setOpen(false)}
+										>
+											Help & Support
+										</Link>
+									</li>
+								</ul>
+								<div className="h-px bg-black/10" />
+								<button
+									role="menuitem"
+									onClick={() => {
+										setOpen(false);
+										// TODO: call your signOut() here if using Clerk/NextAuth
+									}}
+									className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50"
+								>
+									Sign out
+								</button>
+							</div>
+						)}
+					</div>
 				</nav>
 			</div>
 		</header>
