@@ -9,31 +9,32 @@ import { cn } from '@/lib/utils';
 
 type Props = {
 	email?: string;
+	username?: string;
 	avatarSrc?: string;
+	shellCount?: number;
 	className?: string;
 };
 
 export function ProfileDropdown({
 	email = 'you@example.com',
+	username = 'OtterUser',
 	avatarSrc = '/profile-avatar.png',
+	shellCount = 5,
 	className
 }: Props) {
 	const [open, setOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement | null>(null);
-	const buttonRef = useRef<HTMLButtonElement | null>(null);
 	const router = useRouter();
 	const { signOut } = useClerk();
 
+	// Close on outside click / Esc
 	useEffect(() => {
 		const onDocClick = (e: MouseEvent) => {
 			if (!menuRef.current) return;
 			if (!menuRef.current.contains(e.target as Node)) setOpen(false);
 		};
 		const onEsc = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				setOpen(false);
-				buttonRef.current?.focus();
-			}
+			if (e.key === 'Escape') setOpen(false);
 		};
 		document.addEventListener('mousedown', onDocClick);
 		document.addEventListener('keydown', onEsc);
@@ -45,22 +46,39 @@ export function ProfileDropdown({
 
 	return (
 		<div className={cn('relative', className)} ref={menuRef}>
+			{/* Entire clickable toggle */}
 			<button
-				ref={buttonRef}
 				aria-haspopup="menu"
 				aria-expanded={open}
 				onClick={() => setOpen((v) => !v)}
-				className="rounded-full border-2 border-white outline-none ring-offset-2 transition-transform hover:scale-105 focus:ring-2 focus:ring-white/60"
+				className="flex items-center gap-3 rounded-2xl border-2 border-white bg-transparent px-3 py-2 outline-none ring-offset-2 transition-transform hover:scale-105 focus:ring-2 focus:ring-white/60"
 			>
+				{/* Avatar */}
 				<Image
 					src={avatarSrc}
-					alt="Open profile menu"
+					alt="Profile avatar"
 					width={40}
 					height={40}
-					className="rounded-full"
+					className="rounded-full border-2 border-white"
 				/>
+
+				{/* Username and Shells */}
+				<div className="flex flex-col items-start">
+					<p className="text-sm font-semibold text-black drop-shadow-sm">{username}</p>
+					<div className="flex items-center gap-1">
+						<Image
+							src="/shell.svg"
+							alt="Shell count"
+							width={16}
+							height={16}
+							className="opacity-90"
+						/>
+						<span className="text-sm font-medium text-black">{shellCount}</span>
+					</div>
+				</div>
 			</button>
 
+			{/* Dropdown menu */}
 			{open && (
 				<div
 					role="menu"
@@ -120,7 +138,7 @@ export function ProfileDropdown({
 						onClick={async () => {
 							setOpen(false);
 							await signOut();
-							router.push('/'); // or wherever you want post-signout
+							router.push('/');
 						}}
 						className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50"
 					>
