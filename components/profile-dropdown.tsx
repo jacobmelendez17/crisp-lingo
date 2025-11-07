@@ -46,7 +46,6 @@ export function ProfileDropdown({
 
 	return (
 		<div className={cn('relative', className)} ref={menuRef}>
-			{/* Entire clickable toggle */}
 			<button
 				aria-haspopup="menu"
 				aria-expanded={open}
