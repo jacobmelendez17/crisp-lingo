@@ -12,7 +12,7 @@ type PracticeGame = {
 	icon: React.ReactNode;
 	minutes: number;
 	xp: number;
-	color: string; // bg color for the card
+	color: string;
 	locked?: boolean;
 	comingSoon?: boolean;
 };
