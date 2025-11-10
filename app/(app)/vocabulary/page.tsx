@@ -32,12 +32,10 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 
 	return (
 		<main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
-			{/* Title */}
 			<h1 className="pt-2 text-center text-5xl font-bold text-neutral-800">Vocabulary</h1>
 
-			{/* Controls row: center range buttons, toggle on the right */}
 			<div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center">
-				<div /> {/* left spacer */}
+				<div />
 				<div className="flex flex-wrap items-center justify-center gap-2">
 					{LEVEL_RANGES.map((r) => {
 						const href =
@@ -66,9 +64,6 @@ export default async function VocabularyPage({ searchParams }: PageProps) {
 				</div>
 			</div>
 
-			{/* ...keep the rest of your sections rendering as-is... */}
-
-			{/* Level Sections */}
 			{selected.map((lvl, idx) => {
 				const rowsForLevel = groups.get(lvl.id) ?? [];
 				const items: LearnItem[] = rowsForLevel.map((r) => ({

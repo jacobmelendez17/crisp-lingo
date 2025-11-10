@@ -1,4 +1,3 @@
-// app/practice/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';

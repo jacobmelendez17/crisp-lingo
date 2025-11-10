@@ -3,12 +3,12 @@ import { Progress } from '@/components/ui/progress';
 
 type Props = {
 	level?: number;
-	wordsDone?: number; // completed
-	wordsTotal?: number; // default 60
-	grammarDone?: number; // completed
-	grammarTotal?: number; // default 12
-	weekStreak?: number; // 0–7 filled dots
-	currentStreak?: number; // numeric streak
+	wordsDone?: number;
+	wordsTotal?: number;
+	grammarDone?: number;
+	grammarTotal?: number;
+	weekStreak?: number;
+	currentStreak?: number;
 };
 
 export function LevelProgressCard({
