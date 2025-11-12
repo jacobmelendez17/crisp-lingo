@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/profile-dropdown';
+import { Input } from '@/components/ui/input';
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -14,6 +15,7 @@ export const Header = () => {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement | null>(null);
+	const [query, setQuery] = useState('');
 
 	useEffect(() => {
 		const onDocClick = (e: MouseEvent) => {
@@ -30,6 +32,11 @@ export const Header = () => {
 			document.removeEventListener('keydown', onEsc);
 		};
 	}, []);
+
+	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		console.log('Searching for:', query);
+	};
 
 	return (
 		<header className="h-26 w-full border-b-2 bg-[#8ca795] px-6 lg:px-8">
@@ -75,6 +82,16 @@ export const Header = () => {
 							);
 						})}
 					</ul>
+
+					<form onSubmit={handleSearch} className="relative ml-6">
+						<Input
+							type="text"
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							placeholder="Search..."
+							className="w-48 rounded-xl border-2 border-white/70 bg-white/90 px-4 py-2 text-lg text-neutral-800 transition placeholder:text-neutral-500 focus:border-white focus:ring-2 focus:ring-white/50 lg:w-64"
+						/>
+					</form>
 
 					<ProfileDropdown
 						className="ml-4"
