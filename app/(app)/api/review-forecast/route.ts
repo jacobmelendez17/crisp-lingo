@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-//import { getReviewForecast } from "@/db/queries";
+import { getReviewForecast } from "@/db/queries";
 
 export async function GET() {
     try {

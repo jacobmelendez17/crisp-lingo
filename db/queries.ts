@@ -8,7 +8,10 @@ import {
   isNull,
   count,
   lte,
+  lt,
   sql,
+  gte,
+  isNotNull
 } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { getActiveUserId } from "@/db/getActiveUserId";
@@ -18,6 +21,7 @@ import db from "./drizzle";
 import {
   userProgress,
   userVocabSrs,
+  userGrammarSrs,
   vocab,
   levels,
 } from "@/db/schema";
@@ -187,3 +191,69 @@ export const countDueReviews = cache(async () => {
   );
   return (res.rows?.[0]?.c as number) ?? 0;
 });
+
+export const getReviewForecast = cache(async (days = 7) => {
+  const  { userId } = await auth();
+  if (!userId) return [];
+
+  const now = new Date();
+  const end = new Date(now.getTime());
+  end.setDate(end.getDate() + days);
+
+  const vocabRows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${userVocabSrs.nextReviewAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userVocabSrs)
+    .where(
+      and(
+        eq(userVocabSrs.userId, userId),
+        isNotNull(userVocabSrs.nextReviewAt),
+        gte(userVocabSrs.nextReviewAt, now),
+        lt(userVocabSrs.nextReviewAt, end)
+      )
+    )
+    .groupBy(sql`date_trunc('day', ${userGrammarSrs.nextReviewAt})`);
+
+  const grammarRows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${userGrammarSrs.nextReviewAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userGrammarSrs)
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        isNotNull(userGrammarSrs.nextReviewAt),
+        gte(userGrammarSrs.nextReviewAt, now),
+        lt(userGrammarSrs.nextReviewAt, end)
+      )
+    )
+    .groupBy(sql`date_trunc('day', ${userGrammarSrs.nextReviewAt})`);
+
+  const counts = new Map<string, number>();
+
+  const mergeRows = (rows: { date: string; count: number}[]) => {
+    for (const row of rows) {
+      const key = row.date;
+      counts.set(key, (counts.get(key) ?? 0) + Number(row.count));
+    }
+  };
+
+  mergeRows(vocabRows as any);
+  mergeRows(grammarRows as any);
+
+  const daily: { date: string; reviews: number }[] = [];
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now.getTime());
+    d.setDate(now.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+
+    daily.push({
+      date: key,
+      reviews: counts.get(key) ?? 0,
+    });
+  }
+})
