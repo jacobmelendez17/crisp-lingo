@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { CardShell } from '../../../../components/card-shell';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -13,12 +14,17 @@ import {
 	Filler
 } from 'chart.js';
 
-import { useState } from 'react';
-
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Tooltip, Legend, Filler);
 
-//dummy data
-const dailyLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+type DailyPoint = {
+	date: string; // 'YYYY-MM-DD'
+	reviews: number;
+};
+
+type ApiResponse = {
+	daily: DailyPoint[];
+};
+
 const hourlyLabels = [
 	'12 AM',
 	'1 AM',
@@ -36,8 +42,48 @@ const hourlyLabels = [
 
 export function ForecastCard() {
 	const [mode, setMode] = useState<'daily' | 'hourly'>('daily');
+	const [dailyData, setDailyData] = useState<DailyPoint[] | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-	const labels = mode == 'daily' ? dailyLabels : hourlyLabels;
+	useEffect(() => {
+		let cancelled = false;
+
+		const load = async () => {
+			try {
+				setLoading(true);
+				setError(null);
+
+				const res = await fetch('/api/review-forecast');
+				if (!res.ok) {
+					throw new Error(`Request failed with status ${res.status}`);
+				}
+				const json: ApiResponse = await res.json();
+				if (cancelled) return;
+
+				setDailyData(json.daily || []);
+			} catch (err: any) {
+				if (!cancelled) setError(err.message ?? 'Failed to load forecast');
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		};
+
+		void load();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	// Build labels for daily mode: Mon, Tue, etc.
+	const dailyLabels =
+		dailyData?.map((d) => {
+			const date = new Date(d.date);
+			return date.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue, ...
+		}) ?? [];
+
+	const labels = mode === 'daily' ? dailyLabels : hourlyLabels;
 
 	const data = {
 		labels,
@@ -45,14 +91,11 @@ export function ForecastCard() {
 			{
 				label: 'Reviews',
 				data:
-					mode === 'daily' ? [12, 18, 9, 22, 16, 14, 20] : [2, 4, 3, 6, 5, 4, 3, 7, 9, 13, 5, 2],
+					mode === 'daily'
+						? (dailyData ?? []).map((d) => d.reviews)
+						: // For now, keep hourly empty or simple placeholder
+							Array(hourlyLabels.length).fill(0),
 				backgroundColor: '#b8d19f',
-				borderRadius: 6
-			},
-			{
-				label: 'Learn',
-				data: mode === 'daily' ? [3, 5, 2, 6, 4, 4, 7] : [1, 2, 1, 3, 2, 1, 2, 4, 7, 13, 6, 5, 4],
-				backgroundColor: '#678b5b',
 				borderRadius: 6
 			}
 		]
@@ -67,8 +110,8 @@ export function ForecastCard() {
 		},
 		interaction: { mode: 'index', intersect: false },
 		scales: {
-			x: { stacked: true, grid: { display: true } },
-			y: { stacked: true, beginAtZero: true, display: false, grid: { display: false } }
+			x: { stacked: false, grid: { display: true } },
+			y: { beginAtZero: true, display: false, grid: { display: false } }
 		}
 	};
 
@@ -95,6 +138,7 @@ export function ForecastCard() {
 								? 'bg-white text-black shadow-sm'
 								: 'text-neutral-500 hover:text-neutral-700'
 						}`}
+						// Right now hourly is just a placeholder; real data can be added later.
 					>
 						Hourly
 					</button>
@@ -102,7 +146,21 @@ export function ForecastCard() {
 			}
 		>
 			<div className="h-64 w-full">
-				<Bar data={data} options={options} />
+				{loading ? (
+					<div className="flex h-full items-center justify-center text-sm text-neutral-500">
+						Loading forecast…
+					</div>
+				) : error ? (
+					<div className="flex h-full items-center justify-center text-sm text-red-500">
+						{error}
+					</div>
+				) : !dailyData || dailyData.length === 0 ? (
+					<div className="flex h-full items-center justify-center text-sm text-neutral-500">
+						No upcoming reviews yet.
+					</div>
+				) : (
+					<Bar data={data} options={options} />
+				)}
 			</div>
 		</CardShell>
 	);

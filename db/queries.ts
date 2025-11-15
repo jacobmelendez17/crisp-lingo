@@ -193,16 +193,18 @@ export const countDueReviews = cache(async () => {
 });
 
 export const getReviewForecast = cache(async (days = 7) => {
-  const  { userId } = await auth();
+  const { userId } = await auth();
   if (!userId) return [];
 
   const now = new Date();
   const end = new Date(now.getTime());
   end.setDate(end.getDate() + days);
 
+  // --- Vocab: bucket by day ---
+  const vocabDayTrunc = sql`date_trunc('day', ${userVocabSrs.nextReviewAt})`;
   const vocabRows = await db
     .select({
-      date: sql<string>`to_char(date_trunc('day', ${userVocabSrs.nextReviewAt}), 'YYYY-MM-DD')`,
+      date: sql<string>`to_char(${vocabDayTrunc}, 'YYYY-MM-DD')`,
       count: sql<number>`count(*)`,
     })
     .from(userVocabSrs)
@@ -214,11 +216,13 @@ export const getReviewForecast = cache(async (days = 7) => {
         lt(userVocabSrs.nextReviewAt, end)
       )
     )
-    .groupBy(sql`date_trunc('day', ${userGrammarSrs.nextReviewAt})`);
+    .groupBy(vocabDayTrunc);
 
+  // --- Grammar: bucket by day ---
+  const grammarDayTrunc = sql`date_trunc('day', ${userGrammarSrs.nextReviewAt})`;
   const grammarRows = await db
     .select({
-      date: sql<string>`to_char(date_trunc('day', ${userGrammarSrs.nextReviewAt}), 'YYYY-MM-DD')`,
+      date: sql<string>`to_char(${grammarDayTrunc}, 'YYYY-MM-DD')`,
       count: sql<number>`count(*)`,
     })
     .from(userGrammarSrs)
@@ -230,13 +234,14 @@ export const getReviewForecast = cache(async (days = 7) => {
         lt(userGrammarSrs.nextReviewAt, end)
       )
     )
-    .groupBy(sql`date_trunc('day', ${userGrammarSrs.nextReviewAt})`);
+    .groupBy(grammarDayTrunc);
 
+  // --- Merge vocab + grammar into a single map keyed by date string ---
   const counts = new Map<string, number>();
 
-  const mergeRows = (rows: { date: string; count: number}[]) => {
+  const mergeRows = (rows: { date: string; count: number }[]) => {
     for (const row of rows) {
-      const key = row.date;
+      const key = row.date; // 'YYYY-MM-DD'
       counts.set(key, (counts.get(key) ?? 0) + Number(row.count));
     }
   };
@@ -244,16 +249,19 @@ export const getReviewForecast = cache(async (days = 7) => {
   mergeRows(vocabRows as any);
   mergeRows(grammarRows as any);
 
+  // --- Build contiguous array from today -> today + days ---
   const daily: { date: string; reviews: number }[] = [];
 
   for (let i = 0; i < days; i++) {
     const d = new Date(now.getTime());
     d.setDate(now.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
+    const key = d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
     daily.push({
       date: key,
       reviews: counts.get(key) ?? 0,
     });
   }
-})
+
+  return daily;
+});
