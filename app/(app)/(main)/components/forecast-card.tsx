@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CardShell } from '../../../../components/card-shell';
+import { CardShell } from '@/components/card-shell';
 import { Bar } from 'react-chartjs-2';
 import {
 	Chart as ChartJS,
