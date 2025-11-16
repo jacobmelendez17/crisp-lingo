@@ -249,7 +249,6 @@ export const getReviewForecast = cache(async (days = 7) => {
   mergeRows(vocabRows as any);
   mergeRows(grammarRows as any);
 
-  // --- Build contiguous array from today -> today + days ---
   const daily: { date: string; reviews: number }[] = [];
 
   for (let i = 0; i < days; i++) {
@@ -264,4 +263,72 @@ export const getReviewForecast = cache(async (days = 7) => {
   }
 
   return daily;
+});
+
+export const getHourlyReviewForecast = cache(async () => {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  // Target: today (server time) from 00:00 to 24:00
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start.getTime());
+  end.setDate(start.getDate() + 1);
+
+  // --- Vocab: bucket by hour (0–23) ---
+  const vocabHourExpr = sql<number>`cast(date_part('hour', ${userVocabSrs.nextReviewAt}) as int)`;
+  const vocabRows = await db
+    .select({
+      hour: vocabHourExpr,
+      count: sql<number>`count(*)`,
+    })
+    .from(userVocabSrs)
+    .where(
+      and(
+        eq(userVocabSrs.userId, userId),
+        isNotNull(userVocabSrs.nextReviewAt),
+        gte(userVocabSrs.nextReviewAt, start),
+        lt(userVocabSrs.nextReviewAt, end)
+      )
+    )
+    .groupBy(vocabHourExpr);
+
+  // --- Grammar: bucket by hour (0–23) ---
+  const grammarHourExpr = sql<number>`cast(date_part('hour', ${userGrammarSrs.nextReviewAt}) as int)`;
+  const grammarRows = await db
+    .select({
+      hour: grammarHourExpr,
+      count: sql<number>`count(*)`,
+    })
+    .from(userGrammarSrs)
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        isNotNull(userGrammarSrs.nextReviewAt),
+        gte(userGrammarSrs.nextReviewAt, start),
+        lt(userGrammarSrs.nextReviewAt, end)
+      )
+    )
+    .groupBy(grammarHourExpr);
+
+  // --- Merge vocab + grammar into 24 buckets ---
+  const buckets: { hour: number; reviews: number }[] = Array.from(
+    { length: 24 },
+    (_, hour) => ({ hour, reviews: 0 })
+  );
+
+  const mergeRows = (rows: { hour: number; count: number }[]) => {
+    for (const row of rows) {
+      const h = Number(row.hour);
+      if (h >= 0 && h < 24) {
+        buckets[h].reviews += Number(row.count);
+      }
+    }
+  };
+
+  mergeRows(vocabRows as any);
+  mergeRows(grammarRows as any);
+
+  return buckets;
 });
