@@ -269,14 +269,10 @@ export const getHourlyReviewForecast = cache(async () => {
   const { userId } = await auth();
   if (!userId) return [];
 
-  // Target: today (server time) from 00:00 to 24:00
   const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start.getTime());
-  end.setDate(start.getDate() + 1);
+  const end = new Date(now.getTime() + 24 * 60 * 60 * 1000); // next 24 hours
 
-  // --- Vocab: bucket by hour (0–23) ---
+  // --- Vocab: bucket by hour of day (0–23) ---
   const vocabHourExpr = sql<number>`cast(date_part('hour', ${userVocabSrs.nextReviewAt}) as int)`;
   const vocabRows = await db
     .select({
@@ -288,13 +284,13 @@ export const getHourlyReviewForecast = cache(async () => {
       and(
         eq(userVocabSrs.userId, userId),
         isNotNull(userVocabSrs.nextReviewAt),
-        gte(userVocabSrs.nextReviewAt, start),
+        gte(userVocabSrs.nextReviewAt, now),
         lt(userVocabSrs.nextReviewAt, end)
       )
     )
     .groupBy(vocabHourExpr);
 
-  // --- Grammar: bucket by hour (0–23) ---
+  // --- Grammar: bucket by hour of day (0–23) ---
   const grammarHourExpr = sql<number>`cast(date_part('hour', ${userGrammarSrs.nextReviewAt}) as int)`;
   const grammarRows = await db
     .select({
@@ -306,13 +302,13 @@ export const getHourlyReviewForecast = cache(async () => {
       and(
         eq(userGrammarSrs.userId, userId),
         isNotNull(userGrammarSrs.nextReviewAt),
-        gte(userGrammarSrs.nextReviewAt, start),
+        gte(userGrammarSrs.nextReviewAt, now),
         lt(userGrammarSrs.nextReviewAt, end)
       )
     )
     .groupBy(grammarHourExpr);
 
-  // --- Merge vocab + grammar into 24 buckets ---
+  // --- Merge into 24 buckets ---
   const buckets: { hour: number; reviews: number }[] = Array.from(
     { length: 24 },
     (_, hour) => ({ hour, reviews: 0 })
