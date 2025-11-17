@@ -21,8 +21,14 @@ type DailyPoint = {
 	reviews: number;
 };
 
+type HourlyPoint = {
+	hour: number;
+	reviews: number;
+};
+
 type ApiResponse = {
 	daily: DailyPoint[];
+	hourly?: HourlyPoint[];
 };
 
 const hourlyLabels = [
@@ -37,12 +43,25 @@ const hourlyLabels = [
 	'8 AM',
 	'9 AM',
 	'10 AM',
-	'11 AM'
+	'11 AM',
+	'12 PM',
+	'1 PM',
+	'2 PM',
+	'3 PM',
+	'4 PM',
+	'5 PM',
+	'6 PM',
+	'7 PM',
+	'8 PM',
+	'9 PM',
+	'10 PM',
+	'11 PM'
 ];
 
 export function ForecastCard() {
 	const [mode, setMode] = useState<'daily' | 'hourly'>('daily');
 	const [dailyData, setDailyData] = useState<DailyPoint[] | null>(null);
+	const [hourlyData, setHourlyData] = useState<HourlyPoint[] | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -54,14 +73,21 @@ export function ForecastCard() {
 				setLoading(true);
 				setError(null);
 
-				const res = await fetch('/api/review-forecast');
+				const url = mode === 'daily' ? '/api/review-forecast' : '/api/review-forecast?mode=hourly';
+
+				const res = await fetch(url);
 				if (!res.ok) {
 					throw new Error(`Request failed with status ${res.status}`);
 				}
+
 				const json: ApiResponse = await res.json();
 				if (cancelled) return;
 
-				setDailyData(json.daily || []);
+				if (mode === 'daily') {
+					setDailyData(json.daily || []);
+				} else {
+					setHourlyData(json.hourly || []);
+				}
 			} catch (err: any) {
 				if (!cancelled) setError(err.message ?? 'Failed to load forecast');
 			} finally {
@@ -74,7 +100,7 @@ export function ForecastCard() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [mode]);
 
 	// Build labels for daily mode: Mon, Tue, etc.
 	const dailyLabels =
@@ -85,16 +111,20 @@ export function ForecastCard() {
 
 	const labels = mode === 'daily' ? dailyLabels : hourlyLabels;
 
+	const datasetData =
+		mode === 'daily'
+			? (dailyData ?? []).map((d) => d.reviews)
+			: (hourlyData ?? []).map((h) => h.reviews);
+
+	const hasData =
+		mode === 'daily' ? dailyData && dailyData.length > 0 : hourlyData && hourlyData.length > 0;
+
 	const data = {
 		labels,
 		datasets: [
 			{
 				label: 'Reviews',
-				data:
-					mode === 'daily'
-						? (dailyData ?? []).map((d) => d.reviews)
-						: // For now, keep hourly empty or simple placeholder
-							Array(hourlyLabels.length).fill(0),
+				data: datasetData,
 				backgroundColor: '#b8d19f',
 				borderRadius: 6
 			}
@@ -138,7 +168,6 @@ export function ForecastCard() {
 								? 'bg-white text-black shadow-sm'
 								: 'text-neutral-500 hover:text-neutral-700'
 						}`}
-						// Right now hourly is just a placeholder; real data can be added later.
 					>
 						Hourly
 					</button>
@@ -154,7 +183,7 @@ export function ForecastCard() {
 					<div className="flex h-full items-center justify-center text-sm text-red-500">
 						{error}
 					</div>
-				) : !dailyData || dailyData.length === 0 ? (
+				) : !hasData ? (
 					<div className="flex h-full items-center justify-center text-sm text-neutral-500">
 						No upcoming reviews yet.
 					</div>
