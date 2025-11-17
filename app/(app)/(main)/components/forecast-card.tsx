@@ -13,6 +13,7 @@ import {
 	Legend,
 	Filler
 } from 'chart.js';
+import { doublePrecision } from 'drizzle-orm/gel-core';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Tooltip, Legend, Filler);
 
@@ -141,7 +142,22 @@ export function ForecastCard() {
 		interaction: { mode: 'index', intersect: false },
 		scales: {
 			x: { stacked: false, grid: { display: true } },
-			y: { beginAtZero: true, display: false, grid: { display: false } }
+			y: {
+				beginAtZero: true,
+				grid: {
+					display: false
+				},
+				ticks: {
+					stepSize: 1,
+					precision: 0,
+					font: {
+						size: 12,
+						weight: '500'
+					},
+					color: '#555',
+					padding: 4
+				}
+			}
 		}
 	};
 

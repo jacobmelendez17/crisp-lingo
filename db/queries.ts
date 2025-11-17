@@ -328,3 +328,72 @@ export const getHourlyReviewForecast = cache(async () => {
 
   return buckets;
 });
+
+export const getActivity = cache (async () => {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  const end = new Date();
+  const start = new Date(end.getTime());
+  start.setDate(start.getDate() - 6);
+
+  const vocabDayTrunc = sql`date_trunc('day', ${userVocabSrs.firstLearnedAt})`;
+  const vocabRows = await db
+    .select({
+      date: sql<string>`to_char(${vocabDayTrunc}, 'YYYY-MM-DD)`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userVocabSrs)
+    .where(
+      and(
+        eq(userVocabSrs.userId, userId),
+        isNotNull(userVocabSrs.firstLearnedAt),
+        gte(userVocabSrs.firstLearnedAt, start),
+        lte(userVocabSrs.firstLearnedAt, end)
+      )
+    )
+    .groupBy(vocabDayTrunc);
+
+  const grammarDayTrunc = sql`date_trunc('day', ${userGrammarSrs.firstLearnedAt})`;
+  const grammarRows = await db
+    .select({
+      date: sql<string>`to_char(${grammarDayTrunc}, 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userGrammarSrs)
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        isNotNull(userGrammarSrs.firstLearnedAt),
+        gte(userGrammarSrs.firstLearnedAt, start),
+        lte(userGrammarSrs.firstLearnedAt, end)
+      )
+    )
+    .groupBy(grammarDayTrunc);
+
+  const vocabMap = new Map<string, number>();
+
+  for (const row of vocabRows as any) {
+    vocabMap.set(row.date, Number(row.count));
+  }
+
+  const grammarMap = new Map<string, number>();
+  for (const row of grammarRows as any) {
+    grammarMap.set(row.date, Number(row.count));
+  }
+
+  const days: { date: string; vocab: number; grammar: number }[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start.getTime());
+    d.setDate(start.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+
+    days.push({
+      date: key,
+      vocab: vocabMap.get(key) ?? 0,
+      grammar: grammarMap.get(key) ?? 0,
+    });
+  }
+
+  return days;
+})
