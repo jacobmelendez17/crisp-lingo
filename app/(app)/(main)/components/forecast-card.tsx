@@ -13,7 +13,6 @@ import {
 	Legend,
 	Filler
 } from 'chart.js';
-import { doublePrecision } from 'drizzle-orm/gel-core';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Tooltip, Legend, Filler);
 
@@ -74,7 +73,7 @@ export function ForecastCard() {
 				setLoading(true);
 				setError(null);
 
-				const url = mode === 'daily' ? '/api/review-forecast' : '/api/review-forecast?mode=hourly';
+				const url = mode === 'daily' ? '/api/forecast' : '/api/forecast?mode=hourly';
 
 				const res = await fetch(url);
 				if (!res.ok) {

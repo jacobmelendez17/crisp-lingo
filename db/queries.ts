@@ -329,18 +329,19 @@ export const getHourlyReviewForecast = cache(async () => {
   return buckets;
 });
 
-export const getActivity = cache (async () => {
+export const getActivity = cache(async () => {
   const { userId } = await auth();
   if (!userId) return [];
 
-  const end = new Date();
+  const end = new Date(); // now
   const start = new Date(end.getTime());
-  start.setDate(start.getDate() - 6);
+  start.setDate(start.getDate() - 6); // last 7 days including today
 
+  // --- vocab: count by day (firstLearnedAt) ---
   const vocabDayTrunc = sql`date_trunc('day', ${userVocabSrs.firstLearnedAt})`;
   const vocabRows = await db
     .select({
-      date: sql<string>`to_char(${vocabDayTrunc}, 'YYYY-MM-DD)`,
+      date: sql<string>`to_char(${vocabDayTrunc}, 'YYYY-MM-DD')`,
       count: sql<number>`count(*)`,
     })
     .from(userVocabSrs)
@@ -354,6 +355,7 @@ export const getActivity = cache (async () => {
     )
     .groupBy(vocabDayTrunc);
 
+  // --- grammar: count by day (firstLearnedAt) ---
   const grammarDayTrunc = sql`date_trunc('day', ${userGrammarSrs.firstLearnedAt})`;
   const grammarRows = await db
     .select({
@@ -372,7 +374,6 @@ export const getActivity = cache (async () => {
     .groupBy(grammarDayTrunc);
 
   const vocabMap = new Map<string, number>();
-
   for (const row of vocabRows as any) {
     vocabMap.set(row.date, Number(row.count));
   }
@@ -386,7 +387,7 @@ export const getActivity = cache (async () => {
   for (let i = 0; i < 7; i++) {
     const d = new Date(start.getTime());
     d.setDate(start.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
+    const key = d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
     days.push({
       date: key,
@@ -396,4 +397,4 @@ export const getActivity = cache (async () => {
   }
 
   return days;
-})
+});
