@@ -36,7 +36,7 @@ const GAMES: PracticeGame[] = [
 		color: 'bg-[#e8efcf]'
 	},
 	{
-		title: 'Listening Clips',
+		title: 'Listening',
 		href: '/practice/listening',
 		desc: 'Short audio with quick checks',
 		icon: <Headphones className="size-8" />,
@@ -45,7 +45,7 @@ const GAMES: PracticeGame[] = [
 		color: 'bg-[#d7e7f3]'
 	},
 	{
-		title: 'Speed Match',
+		title: 'Grocery Store',
 		href: '/practice/speed',
 		desc: 'Match words & meanings—fast!',
 		icon: <Zap className="size-8" />,
@@ -54,7 +54,7 @@ const GAMES: PracticeGame[] = [
 		color: 'bg-[#f1e4d6]'
 	},
 	{
-		title: 'Flashcards',
+		title: 'Decks',
 		href: '/practice/flashcards',
 		desc: 'Classic review with spaced timing',
 		icon: <Brain className="size-8" />,
@@ -63,23 +63,13 @@ const GAMES: PracticeGame[] = [
 		color: 'bg-[#e6dcf4]'
 	},
 	{
-		title: 'Picture Match',
+		title: 'Hospital',
 		href: '/practice/pictures',
 		desc: 'Tap the image that fits the word',
 		icon: <ImageIcon className="size-8" />,
 		minutes: 4,
 		xp: 14,
 		color: 'bg-[#f6e9ee]'
-	},
-	{
-		title: 'Timed Quiz',
-		href: '/practice/timed',
-		desc: 'Beat the clock with streaks',
-		icon: <Timer className="size-8" />,
-		minutes: 4,
-		xp: 22,
-		color: 'bg-[#dfe9ff]',
-		locked: true
 	}
 ];
 

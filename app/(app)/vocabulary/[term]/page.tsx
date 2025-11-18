@@ -4,7 +4,7 @@ import { vocab, userVocabSrs } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 
-export const revalidate = 60; // incremental static regeneration
+export const revalidate = 60;
 
 type Props = { params: { term: string } };
 
@@ -17,7 +17,6 @@ export default async function VocabDetailPage({ params }: Props) {
 
 	if (!row) return notFound();
 
-	// ---- Fetch next review for this vocab & user ----
 	const { userId } = await auth();
 	let nextReviewText = 'Not scheduled yet';
 
@@ -39,7 +38,7 @@ export default async function VocabDetailPage({ params }: Props) {
 			if (diffMs <= 0) {
 				nextReviewText = 'Review available now';
 			} else {
-				const hours = Math.round(diffMs / (1000 * 60 * 60)); // rounded to nearest hour
+				const hours = Math.round(diffMs / (1000 * 60 * 60));
 
 				if (hours < 1) {
 					nextReviewText = 'In less than 1 hour';
@@ -81,7 +80,6 @@ export default async function VocabDetailPage({ params }: Props) {
 				</section>
 			</div>
 
-			{/* Next review info */}
 			<section className="mt-8 rounded-xl border border-black/5 bg-neutral-50 p-4 text-sm text-neutral-700">
 				<h2 className="mb-1 text-base font-semibold">Next review</h2>
 				<p>{nextReviewText}</p>
