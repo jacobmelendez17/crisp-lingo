@@ -90,7 +90,6 @@ function PracticeTile({ game }: { game: PracticeGame }) {
 				</div>
 			)}
 
-			{/* Title row */}
 			<div className="flex items-center gap-3">
 				<div
 					className={cn(
