@@ -7,23 +7,27 @@ import { Settings, Bell, User, Brain } from 'lucide-react';
 
 const links = [
 	{
+		id: 'general',
 		href: '/settings',
 		label: 'General',
 		icon: Settings
 	},
 	{
-		href: '/settings',
+		id: 'notifications',
+		href: '/settings/notifications',
 		label: 'Notifications',
 		icon: Bell
 	},
 	{
-		href: '/settings',
+		id: 'account',
+		href: '/settings/account',
 		label: 'Account',
 		icon: User
 	},
 	{
-		href: '/settings',
-		label: 'API',
+		id: 'srs',
+		href: '/settings/srs',
+		label: 'SRS & Reviews',
 		icon: Brain
 	}
 ];
@@ -43,7 +47,7 @@ export function SettingsSidebar() {
 
 					return (
 						<Link
-							key={link.href}
+							key={link.id} // 👈 now using a dedicated unique key
 							href={link.href}
 							className={cn(
 								'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all',
