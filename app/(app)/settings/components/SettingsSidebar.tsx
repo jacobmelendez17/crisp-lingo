@@ -37,7 +37,6 @@ export function SettingsSidebar() {
 
 	return (
 		<div className="rounded-2xl border border-black/5 bg-[#f7f3ea] p-4 shadow-sm">
-			<h2 className="mb-4 text-xl font-semibold text-neutral-800">Settings</h2>
 			<nav className="space-y-1">
 				{links.map((link) => {
 					const Icon = link.icon;
@@ -46,18 +45,30 @@ export function SettingsSidebar() {
 						(pathname?.startsWith(link.href) && link.href !== '/settings');
 
 					return (
-						<Link
-							key={link.id} // 👈 now using a dedicated unique key
-							href={link.href}
-							className={cn(
-								'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all',
-								'hover:bg-white/80 hover:text-neutral-900',
-								active ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600'
-							)}
-						>
-							<Icon className="h-4 w-4" />
-							<span>{link.label}</span>
-						</Link>
+						<div key={link.id} className="group relative">
+							<span
+								className={cn(
+									'pointer-events-none absolute inset-y-0 right-[-10px] w-3 rounded-r-xl',
+									'translate-x-0 bg-[#9bc57a] opacity-0 transition-all duration-150',
+									'group-hover:translate-x-[2px] group-hover:opacity-100',
+									active && 'translate-x-[2px] opacity-100'
+								)}
+							/>
+
+							<Link
+								href={link.href}
+								className={cn(
+									'relative z-10 flex items-center gap-3 rounded-xl border border-black/10 px-4 py-3 text-sm font-medium',
+									'transition-all duration-150',
+									'bg-[#9bc57a] text-neutral-900',
+									'group-hover:translate-x-[4px] group-hover:shadow-sm',
+									active && 'translate-x-[4px] border-black/20 shadow-md'
+								)}
+							>
+								<Icon className="h-4 w-4" />
+								<span>{link.label}</span>
+							</Link>
+						</div>
 					);
 				})}
 			</nav>
