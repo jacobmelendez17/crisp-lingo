@@ -1,4 +1,3 @@
-// app/(app)/vocabulary/page.tsx  (only header area shown; rest of file unchanged)
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';

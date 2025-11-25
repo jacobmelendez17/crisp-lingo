@@ -79,11 +79,12 @@ export default async function VocabDetailPage({ params }: Props) {
 					<p>{row.synonyms ?? '-'}</p>
 				</section>
 			</div>
-
+			<div className="mx-2 h-px flex-1 border-t border-dashed border-black/40" aria-hidden />
 			<section className="mt-8 rounded-xl border border-black/5 bg-neutral-50 p-4 text-sm text-neutral-700">
 				<h2 className="mb-1 text-base font-semibold">Next review</h2>
 				<p>{nextReviewText}</p>
 			</section>
+			<div className="mx-2 h-px flex-1 border-t border-dashed border-black/40" aria-hidden />
 		</main>
 	);
 }
