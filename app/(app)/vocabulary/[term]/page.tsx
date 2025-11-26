@@ -36,7 +36,7 @@ export default async function VocabDetailPage({ params }: Props) {
 			const diffMs = nextReviewAt.getTime() - now.getTime();
 
 			if (diffMs <= 0) {
-				nextReviewText = 'Review available now';
+				nextReviewText = 'Available now';
 			} else {
 				const hours = Math.round(diffMs / (1000 * 60 * 60));
 
@@ -88,7 +88,7 @@ export default async function VocabDetailPage({ params }: Props) {
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Meaning</h2>
 
-				<p className="mt-4 text-lg leading-relaxed text-neutral-800">
+				<p className="mt-4 text-xl leading-relaxed text-neutral-800">
 					{row.meaning ?? 'No meaning has been added for this word yet.'}
 				</p>
 
@@ -110,7 +110,6 @@ export default async function VocabDetailPage({ params }: Props) {
 
 			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
 
-			{/* Reading section */}
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Reading</h2>
 				<p className="mt-4 text-lg text-neutral-800">
@@ -120,10 +119,49 @@ export default async function VocabDetailPage({ params }: Props) {
 
 			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
 
-			{/* Progress / next review */}
-			<section className="mt-8 rounded-2xl bg-[#f0f7ee] p-5 text-neutral-800 shadow-sm">
-				<h2 className="mb-2 text-2xl font-semibold text-neutral-900">Next review</h2>
-				<p className="text-lg">{nextReviewText}</p>
+			<section className="mt-8">
+				<h2 className="text-3xl font-semibold text-neutral-900">Example Sentences</h2>
+				<p className="mt-4 text-lg text-neutral-800">
+					{row.pronunciation ?? 'No pronunciation has been added yet.'}
+				</p>
+			</section>
+
+			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+
+			<section className="mt-8">
+				<h2 className="text-3xl font-semibold text-neutral-900">Current Progress</h2>
+				<p className="mt-4 text-lg text-neutral-800">
+					{row.pronunciation ?? 'No pronunciation has been added yet.'}
+				</p>
+			</section>
+
+			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+
+			{/* Progress strip */}
+			<section className="mt-8 grid gap-4 sm:grid-cols-3">
+				{/* Next Review */}
+				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
+					<h2 className="text-xl font-semibold text-neutral-900">Next Review</h2>
+					<p className="mt-2 text-lg text-neutral-800">{nextReviewText}</p>
+				</div>
+
+				{/* Last Reviewed */}
+				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
+					<h2 className="text-xl font-semibold text-neutral-900">Last Reviewed</h2>
+					<p className="mt-2 text-lg text-neutral-800">
+						{(row as any).lastReviewedAt
+							? new Date((row as any).lastReviewedAt).toLocaleDateString()
+							: '—'}
+					</p>
+				</div>
+
+				{/* Unlocked Date */}
+				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
+					<h2 className="text-xl font-semibold text-neutral-900">Unlocked On</h2>
+					<p className="mt-2 text-lg text-neutral-800">
+						{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}
+					</p>
+				</div>
 			</section>
 		</main>
 	);
