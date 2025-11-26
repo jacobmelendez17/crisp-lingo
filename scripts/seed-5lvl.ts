@@ -28,7 +28,7 @@ type GrammarSeed = {
 
 const VOCAB: VocabSeed[] = [
   { word: "uno", translation: "one", 
-    imageUrl: "/public/starter-icons/one.svg",
+    imageUrl: "/starter-icons/one.svg",
     meaning: `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something.(insert example: "Solo me queda un problema en el examen. Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`, 
     mnemonic: `This is just like the card game "Uno". When you have one card left you scream "UNO!"`,
     partOfSpeech: "numeral",
@@ -182,6 +182,7 @@ const main = async () => {
           partOfSpeech: v.partOfSpeech ?? null,
           pronunciation: v.pronunciation ?? null,
           imageUrl: v.imageUrl ?? null,
+          ipa: v.ipa ?? null,
           levelId,
           position: i + 1,
         });

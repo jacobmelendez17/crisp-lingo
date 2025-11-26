@@ -78,6 +78,19 @@ export const userVocabSrs = pgTable("user_vocab_srs", {
   ]
 );
 
+export const vocabExamples = pgTable("vocab_examples", {
+    id: serial("id").primaryKey(),
+    vocabId: integer("vocab_id")
+        .references(() => vocab.id, { onDelete: "cascade"})
+        .notNull(),
+    sentence: text("sentence").notNull(),
+    tranlsation: text("translation"),
+    audioUrl: text("audio_src"),
+    position: integer("position").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const grammar = pgTable("grammar", {
     id: serial("id").primaryKey(),
     title: varchar("title", { length: 160 }).notNull(),

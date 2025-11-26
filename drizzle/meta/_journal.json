@@ -29,6 +29,13 @@
       "when": 1764194077242,
       "tag": "0003_wakeful_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764195396156,
+      "tag": "0004_lumpy_firestar",
+      "breakpoints": true
     }
   ]
 }
