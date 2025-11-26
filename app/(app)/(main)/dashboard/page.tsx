@@ -19,6 +19,7 @@ export default async function DashboardPage() {
 				</div>
 				<aside className="h-fit lg:top-6">
 					<LevelProgressCard />
+					<LevelProgressCard />
 				</aside>
 				<div className="col-span-full lg:col-[1/-1]">
 					<ProgressCard />
