@@ -47,6 +47,7 @@ export const vocab = pgTable("vocab", {
     word: varchar("word", { length: 128 }).notNull(),
     translation: varchar("translation", { length: 128 }).notNull(),
     pronunciation: varchar("pronunciation", { length: 256 }),
+    ipa: varchar("ipa", {length: 256 }),
     meaning: text("meaning").notNull(),
     example: text("example"),
     exampleTranslation: text("example_translation"),

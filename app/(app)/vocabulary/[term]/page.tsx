@@ -3,6 +3,7 @@ import db from '@/db/drizzle';
 import { vocab, userVocabSrs } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
+import Image from 'next/image';
 
 export const revalidate = 60;
 
@@ -56,6 +57,18 @@ export default async function VocabDetailPage({ params }: Props) {
 	return (
 		<main className="mx-auto w-full max-w-[900px] px-4 py-10 lg:px-0">
 			<section className="text-center">
+				{row.imageUrl && (
+					<div className="mx-auto mb-4 flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm">
+						<Image
+							src={row.imageUrl}
+							alt={row.word}
+							width={128}
+							height={128}
+							className="object-contain p-2"
+						/>
+					</div>
+				)}
+
 				<h1 className="mt-2 text-6xl font-extrabold text-neutral-900">{row.word}</h1>
 				<p className="mt-3 text-2xl text-neutral-700">{row.translation}</p>
 
@@ -82,7 +95,7 @@ export default async function VocabDetailPage({ params }: Props) {
 			</section>
 
 			{/* dashed separator */}
-			<div className="mt-8 border-t border-dashed border-[#a3c1ad]" />
+			<div className="mt-8 border-t border-dashed border-black" />
 
 			{/* Meaning section */}
 			<section className="mt-8">
@@ -108,7 +121,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				)}
 			</section>
 
-			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+			<div className="mt-10 border-t border-dashed border-black" />
 
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Reading</h2>
@@ -117,7 +130,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				</p>
 			</section>
 
-			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+			<div className="mt-10 border-t border-dashed border-black" />
 
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Example Sentences</h2>
@@ -126,7 +139,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				</p>
 			</section>
 
-			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+			<div className="mt-10 border-t border-dashed border-black" />
 
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Current Progress</h2>
@@ -135,7 +148,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				</p>
 			</section>
 
-			<div className="mt-10 border-t border-dashed border-[#a3c1ad]" />
+			<div className="mt-10 border-t border-dashed border-black" />
 
 			{/* Progress strip */}
 			<section className="mt-8 grid gap-4 sm:grid-cols-3">
