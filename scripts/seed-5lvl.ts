@@ -17,12 +17,19 @@ type VocabSeed = {
   meaning: string;
   imageUrl?: string;
   level: number;
+  examples?: VocabExampleSeed[];
 };
 
 type GrammarSeed = {
   title: string;
   structure: string;
   summary?: string;
+};
+
+type VocabExampleSeed = {
+  sentence: string;
+  translation?: string;
+  audioUrl?: string;
 };
 
 
@@ -34,8 +41,40 @@ const VOCAB: VocabSeed[] = [
     partOfSpeech: "numeral",
     pronunciation: "oo-noh",
     ipa: "/'uno/",
-
-    level: 1 },
+    level: 1,
+    examples: [
+      {
+        sentence: "Tengo uno",
+        translation: "I have one",
+        audioUrl: "/audio/uno_m",
+      },
+      {
+        sentence: "Uno está aquí",
+        translation: "One is here",
+        audioUrl: "/audio/uno_m",
+      },
+      {
+        sentence: "Solo necesito uno más",
+        translation: "I only need one more",
+        audioUrl: "/audio/uno_m",
+      },
+      {
+        sentence: "Me queda uno todavía",
+        translation: "I still have one left",
+        audioUrl: "/audio/uno_m",
+      },
+      {
+        sentence: "Me queda uno todavía",
+        translation: "I still have one left",
+        audioUrl: "/audio/uno_m",
+      },
+      {
+        sentence: "Uno debe pensar bien antes de tomar una decisión importante",
+        translation: "One must think carefully before making an important decision.",
+        audioUrl: "/audio/uno_m",
+      },
+    ] ,
+  },
   { word: "dos", translation: "two", meaning: "numeral: two, 2", level: 1 },
   { word: "tres", translation: "three", meaning: "numeral: three, 3", level: 1 },
   { word: "cuatro", translation: "four", meaning: "numeral: four, 4", level: 1 },
@@ -136,6 +175,7 @@ const main = async () => {
       TRUNCATE TABLE
         "user_vocab_srs",
         "user_progress",
+        "vocab_examples,
         "vocab",
         "levels",
         "courses"
@@ -172,20 +212,36 @@ const main = async () => {
     for (let gi = 0; gi < groups.length; gi++) {
       const levelId = levelIds[gi];
       const items = groups[gi];
+
       for (let i = 0; i < items.length; i++) {
         const v = items[i];
-        await db.insert(schema.vocab).values({
-          word: v.word,
-          translation: v.translation,
-          meaning: v.meaning,
-          mnemonic: v.mnemonic ?? null,
-          partOfSpeech: v.partOfSpeech ?? null,
-          pronunciation: v.pronunciation ?? null,
-          imageUrl: v.imageUrl ?? null,
-          ipa: v.ipa ?? null,
-          levelId,
-          position: i + 1,
-        });
+
+        const [inserted] = await db
+          .insert(schema.vocab)
+          .values({
+            word: v.word,
+            translation: v.translation,
+            meaning: v.meaning,
+            mnemonic: v.mnemonic ?? null,
+            partOfSpeech: v.partOfSpeech ?? null,
+            pronunciation: v.pronunciation ?? null,
+            imageUrl: v.imageUrl ?? null,
+            levelId,
+            position: i + 1,
+          })
+          .returning({ id: schema.vocab.id });
+
+        if (v.examples && v.examples.length > 0) {
+          await db.insert(schema.vocabExamples).values(
+            v.examples.map((ex, idx) => ({
+              vocabId: inserted.id,
+              sentence: ex.sentence,
+              translation: ex.translation ?? null,
+              audioUrl: ex.audioUrl ?? null,
+              position: idx + 1,
+            }))
+          )
+        }
       }
     }
 
