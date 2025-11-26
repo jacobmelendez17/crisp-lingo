@@ -61,19 +61,19 @@ export default async function VocabDetailPage({ params }: Props) {
 
 				<div className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-black/5 bg-[#f0f7ee] px-6 py-3 text-base text-neutral-800 shadow-sm">
 					<div>
-						<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-							Part of Speech
+						<span className="text-small font-semibold uppercase tracking-wide text-neutral-500">
+							Part Of Speech
 						</span>
 						<p className="text-lg font-medium">{row.partOfSpeech ?? '—'}</p>
 					</div>
 					<div>
-						<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+						<span className="text-small font-semibold uppercase tracking-wide text-neutral-500">
 							Pronunciation
 						</span>
 						<p className="text-lg font-medium">{row.pronunciation ?? '—'}</p>
 					</div>
 					<div>
-						<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+						<span className="text-small font-semibold uppercase tracking-wide text-neutral-500">
 							IPA
 						</span>
 						<p className="text-lg font-medium">{ipa ?? '—'}</p>

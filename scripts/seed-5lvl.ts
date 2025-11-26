@@ -10,6 +10,9 @@ const db = drizzle(sql, { schema });
 type VocabSeed = {
   word: string;
   translation: string;
+  partOfSpeech?: string;
+  ipa?: string;
+  mnemonic?: string;
   meaning: string;
   level: number;
 };
@@ -20,14 +23,15 @@ type GrammarSeed = {
   summary?: string;
 };
 
-// NOTE: We normalized a couple of typos from the provided list:
-// - "ten  diez" -> Spanish word is "diez", translation "ten"
-// - "la woman  mujer" -> Spanish word is "mujer", translation "woman"
-// We keep articles (el/la) where the user provided them.
 
 const VOCAB: VocabSeed[] = [
-  // 🟩 Level 1
-  { word: "uno", translation: "one", meaning: `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something.(insert example: "Solo me queda un problema en el examen. Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`, level: 1 },
+  { word: "uno", translation: "one", 
+    meaning: `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something.(insert example: "Solo me queda un problema en el examen. Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`, 
+    mnemonic: `This is just like the card game "Uno". When you have one card left you scream "UNO!"`,
+    partOfSpeech: "oo-noh",
+    ipa: "/'uno/",
+
+    level: 1 },
   { word: "dos", translation: "two", meaning: "numeral: two, 2", level: 1 },
   { word: "tres", translation: "three", meaning: "numeral: three, 3", level: 1 },
   { word: "cuatro", translation: "four", meaning: "numeral: four, 4", level: 1 },
