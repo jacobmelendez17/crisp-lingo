@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
 import db from '@/db/drizzle';
-import { vocab, userVocabSrs } from '@/db/schema';
+import { vocab, userVocabSrs, vocabExamples } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import Image from 'next/image';
+import { ExampleSentenceCard } from './ExampleSentenceCard';
+import { getVocabByWord, getVocabExamples } from '@/db/queries';
 
 export const revalidate = 60;
 
@@ -12,11 +14,11 @@ type Props = { params: { term: string } };
 export default async function VocabDetailPage({ params }: Props) {
 	const term = decodeURIComponent(params.term);
 
-	const row = await db.query.vocab.findFirst({
-		where: eq(vocab.word, term)
-	});
+	const row = await getVocabByWord(term);
 
 	if (!row) return notFound();
+
+	const examples = await getVocabExamples(row.id);
 
 	const { userId } = await auth();
 	let nextReviewText = 'Not scheduled yet';
@@ -133,10 +135,14 @@ export default async function VocabDetailPage({ params }: Props) {
 			<div className="mt-10 border-t border-dashed border-black" />
 
 			<section className="mt-8">
-				<h2 className="text-3xl font-semibold text-neutral-900">Example Sentences</h2>
-				<p className="mt-4 text-lg text-neutral-800">
-					{row.pronunciation ?? 'No pronunciation has been added yet.'}
-				</p>
+				<ExampleSentenceCard
+					examples={examples.map((ex) => ({
+						id: ex.id,
+						sentence: ex.sentence,
+						translation: ex.translation ?? '',
+						audioUrl: ex.audioUrl ?? undefined
+					}))}
+				/>
 			</section>
 
 			<div className="mt-10 border-t border-dashed border-black" />

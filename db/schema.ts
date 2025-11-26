@@ -84,11 +84,11 @@ export const vocabExamples = pgTable("vocab_examples", {
         .references(() => vocab.id, { onDelete: "cascade"})
         .notNull(),
     sentence: text("sentence").notNull(),
-    tranlsation: text("translation"),
+    translation: text("translation"),
     audioUrl: text("audio_src"),
     position: integer("position").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const grammar = pgTable("grammar", {

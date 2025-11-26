@@ -24,6 +24,7 @@ import {
   userGrammarSrs,
   vocab,
   levels,
+  vocabExamples,
 } from "@/db/schema";
 
 
@@ -398,3 +399,26 @@ export const getActivity = cache(async () => {
 
   return days;
 });
+
+export const getVocabByWord = cache(async (word: string) => {
+  const row = await db.query.vocab.findFirst({
+    where: eq(vocab.word, word),
+  });
+  return row ?? null;
+});
+
+export const getVocabExamples = cache(async (vocabId: number) => {
+  const rows = await db
+    .select({
+      id: vocabExamples.id,
+      sentence: vocabExamples.sentence,
+      translation: vocabExamples.translation,
+      audioUrl: vocabExamples.audioUrl,
+      position: vocabExamples.position,
+    })
+    .from(vocabExamples)
+    .where(eq(vocabExamples.vocabId, vocabId))
+    .orderBy(asc(vocabExamples));
+
+    return rows;
+})

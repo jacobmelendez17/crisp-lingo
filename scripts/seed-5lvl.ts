@@ -64,11 +64,6 @@ const VOCAB: VocabSeed[] = [
         audioUrl: "/audio/uno_m",
       },
       {
-        sentence: "Me queda uno todavía",
-        translation: "I still have one left",
-        audioUrl: "/audio/uno_m",
-      },
-      {
         sentence: "Uno debe pensar bien antes de tomar una decisión importante",
         translation: "One must think carefully before making an important decision.",
         audioUrl: "/audio/uno_m",
@@ -175,7 +170,7 @@ const main = async () => {
       TRUNCATE TABLE
         "user_vocab_srs",
         "user_progress",
-        "vocab_examples,
+        "vocab_examples",
         "vocab",
         "levels",
         "courses"
