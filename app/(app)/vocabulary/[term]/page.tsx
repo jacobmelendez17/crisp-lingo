@@ -12,11 +12,14 @@ export const revalidate = 60;
 type Props = { params: { term: string } };
 
 export default async function VocabDetailPage({ params }: Props) {
-	const term = decodeURIComponent(params.term);
+	const term = decodeURIComponent((await params).term);
 
 	const row = await getVocabByWord(term);
 
 	if (!row) return notFound();
+
+	let lastReviewedAt: Date | undefined;
+	let firstLearnedAt: Date | undefined;
 
 	const examples = await getVocabExamples(row.id);
 
@@ -26,13 +29,17 @@ export default async function VocabDetailPage({ params }: Props) {
 	if (userId) {
 		const [srsRow] = await db
 			.select({
-				nextReviewAt: userVocabSrs.nextReviewAt
+				nextReviewAt: userVocabSrs.nextReviewAt,
+				lastReviewedAt: userVocabSrs.lastReviewedAt,
+				firstLearnedAt: userVocabSrs.firstLearnedAt
 			})
 			.from(userVocabSrs)
 			.where(and(eq(userVocabSrs.userId, userId), eq(userVocabSrs.vocabId, row.id)))
 			.limit(1);
 
 		const nextReviewAt = srsRow?.nextReviewAt as Date | undefined;
+		lastReviewedAt = srsRow?.lastReviewedAt as Date | undefined;
+		firstLearnedAt = srsRow?.firstLearnedAt as Date | undefined;
 
 		if (nextReviewAt) {
 			const now = new Date();
@@ -168,9 +175,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
 					<h2 className="text-xl font-semibold text-neutral-900">Last Reviewed</h2>
 					<p className="mt-2 text-lg text-neutral-800">
-						{(row as any).lastReviewedAt
-							? new Date((row as any).lastReviewedAt).toLocaleDateString()
-							: '—'}
+						{lastReviewedAt ? lastReviewedAt.toLocaleDateString() : '—'}
 					</p>
 				</div>
 
@@ -178,7 +183,7 @@ export default async function VocabDetailPage({ params }: Props) {
 				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
 					<h2 className="text-xl font-semibold text-neutral-900">Unlocked On</h2>
 					<p className="mt-2 text-lg text-neutral-800">
-						{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}
+						{firstLearnedAt ? firstLearnedAt.toLocaleDateString() : '—'}
 					</p>
 				</div>
 			</section>

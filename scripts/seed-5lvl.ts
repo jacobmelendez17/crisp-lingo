@@ -46,7 +46,7 @@ const VOCAB: VocabSeed[] = [
       {
         sentence: "Tengo uno",
         translation: "I have one",
-        audioUrl: "/audio/uno_m",
+        audioUrl: "/audio/uno_1.mp3",
       },
       {
         sentence: "Uno está aquí",
