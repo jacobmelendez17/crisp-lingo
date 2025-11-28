@@ -422,3 +422,123 @@ export const getVocabExamples = cache(async (vocabId: number) => {
 
     return rows;
 })
+
+export const getYearlyActivity = cache(async () => {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  const end = new Date(); // today
+  end.setHours(23, 59, 59, 999);
+
+  const start = new Date(end.getTime());
+  start.setFullYear(start.getFullYear() - 1); // 1 year ago
+
+  // ---- Lessons learned (firstLearnedAt) ----
+  const vocabDayTruncLearn = sql`date_trunc('day', ${userVocabSrs.firstLearnedAt})`;
+  const vocabLearnRows = await db
+    .select({
+      date: sql<string>`to_char(${vocabDayTruncLearn}, 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userVocabSrs)
+    .where(
+      and(
+        eq(userVocabSrs.userId, userId),
+        isNotNull(userVocabSrs.firstLearnedAt),
+        gte(userVocabSrs.firstLearnedAt, start),
+        lte(userVocabSrs.firstLearnedAt, end)
+      )
+    )
+    .groupBy(vocabDayTruncLearn);
+
+  const grammarDayTruncLearn = sql`date_trunc('day', ${userGrammarSrs.firstLearnedAt})`;
+  const grammarLearnRows = await db
+    .select({
+      date: sql<string>`to_char(${grammarDayTruncLearn}, 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userGrammarSrs)
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        isNotNull(userGrammarSrs.firstLearnedAt),
+        gte(userGrammarSrs.firstLearnedAt, start),
+        lte(userGrammarSrs.firstLearnedAt, end)
+      )
+    )
+    .groupBy(grammarDayTruncLearn);
+
+  // ---- Reviews done (lastReviewedAt) ----
+  const vocabDayTruncReview = sql`date_trunc('day', ${userVocabSrs.lastReviewedAt})`;
+  const vocabReviewRows = await db
+    .select({
+      date: sql<string>`to_char(${vocabDayTruncReview}, 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userVocabSrs)
+    .where(
+      and(
+        eq(userVocabSrs.userId, userId),
+        isNotNull(userVocabSrs.lastReviewedAt),
+        gte(userVocabSrs.lastReviewedAt, start),
+        lte(userVocabSrs.lastReviewedAt, end)
+      )
+    )
+    .groupBy(vocabDayTruncReview);
+
+  const grammarDayTruncReview = sql`date_trunc('day', ${userGrammarSrs.lastReviewedAt})`;
+  const grammarReviewRows = await db
+    .select({
+      date: sql<string>`to_char(${grammarDayTruncReview}, 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)`,
+    })
+    .from(userGrammarSrs)
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        isNotNull(userGrammarSrs.lastReviewedAt),
+        gte(userGrammarSrs.lastReviewedAt, start),
+        lte(userGrammarSrs.lastReviewedAt, end)
+      )
+    )
+    .groupBy(grammarDayTruncReview);
+
+  // ---- Merge into a single map: total activity per day ----
+  const map = new Map<string, { lessons: number; reviews: number }>();
+
+  const addRows = (
+    rows: { date: string; count: number }[],
+    kind: "lessons" | "reviews"
+  ) => {
+    for (const row of rows) {
+      const key = row.date;
+      const existing = map.get(key) ?? { lessons: 0, reviews: 0 };
+      existing[kind] += Number(row.count);
+      map.set(key, existing);
+    }
+  };
+
+  addRows(vocabLearnRows as any, "lessons");
+  addRows(grammarLearnRows as any, "lessons");
+  addRows(vocabReviewRows as any, "reviews");
+  addRows(grammarReviewRows as any, "reviews");
+
+  // ---- Build full list of days for the past year ----
+  const days: { date: string; lessons: number; reviews: number; total: number }[] = [];
+  const cursor = new Date(start.getTime());
+
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10); // YYYY-MM-DD
+    const v = map.get(key) ?? { lessons: 0, reviews: 0 };
+    days.push({
+      date: key,
+      lessons: v.lessons,
+      reviews: v.reviews,
+      total: v.lessons + v.reviews,
+    });
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return days;
+});
