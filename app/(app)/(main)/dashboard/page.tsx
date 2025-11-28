@@ -4,6 +4,7 @@ import { ForecastCard } from '../components/forecast-card';
 import { ActivityCard } from '../components/activity-card';
 import { LevelProgressCard } from '../components/level-progress-card';
 import { ProgressCard } from '../components/progress-card';
+import { UserProgressCard } from '../components/user-progress-card';
 
 export default async function DashboardPage() {
 	return (
@@ -19,7 +20,7 @@ export default async function DashboardPage() {
 				</div>
 				<aside className="h-fit lg:top-6">
 					<LevelProgressCard />
-					<LevelProgressCard />
+					<UserProgressCard />
 				</aside>
 				<div className="col-span-full lg:col-[1/-1]">
 					<ProgressCard />
