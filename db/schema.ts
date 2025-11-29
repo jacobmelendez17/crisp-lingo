@@ -70,6 +70,8 @@ export const userVocabSrs = pgTable("user_vocab_srs", {
     firstLearnedAt: timestamp("first_learned_at", { withTimezone: true }),
     lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
     nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
+    correctCount: integer("correct_count").notNull().default(0),
+    incorrectCount: integer("incorrect_count").notNull().default(0),
 },
 (t) => [
     primaryKey({ columns: [t.userId, t.vocabId], name: "user_vocab_srs_pk" }),

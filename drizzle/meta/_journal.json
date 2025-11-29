@@ -43,6 +43,13 @@
       "when": 1764198793162,
       "tag": "0005_busy_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764399561138,
+      "tag": "0006_nappy_leper_queen",
+      "breakpoints": true
     }
   ]
 }
