@@ -12,6 +12,9 @@ type Item = {
 	word: string;
 	translation: string;
 	imageUrl?: string | null;
+	srsLevel?: number;
+	example?: string | null;
+	exampleTranslation?: string | null;
 };
 
 type Props = {
@@ -41,6 +44,9 @@ type ResultRow = {
 	firstTryCorrect: boolean;
 	attempts: number;
 };
+
+// 🆕 what kind of prompt we’re showing
+type PromptMode = 'esToEn' | 'imageToEs' | 'clozeEs';
 
 export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const router = useRouter();
@@ -80,13 +86,57 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const correctForLesson = sessionType === 'review' ? firstTryCorrect : correct;
 	const remaining = Math.max(0, total - correct);
 
+	// 🆕 decide what kind of prompt to show for the current item
+	const promptMode: PromptMode = useMemo(() => {
+		if (!current) return 'esToEn';
+
+		// Lessons always Spanish -> English
+		if (sessionType === 'lesson') return 'esToEn';
+
+		const level = current.srsLevel ?? 1;
+
+		if (level <= 1) {
+			// first review → Spanish -> English
+			return 'esToEn';
+		}
+
+		if (level === 2 && current.imageUrl) {
+			// second stage → Image -> Spanish
+			return 'imageToEs';
+		}
+
+		if (level >= 3 && current.example) {
+			// later stages → Cloze sentence -> Spanish
+			return 'clozeEs';
+		}
+
+		// fallback
+		return 'esToEn';
+	}, [current, sessionType]);
+
+	// 🆕 build cloze sentence for SRS 3+
+	const clozeSentence = useMemo(() => {
+		if (!current?.example) return null;
+		const re = new RegExp(`\\b${current.word}\\b`, 'gi');
+		const replaced = current.example.replace(re, '____');
+		return replaced;
+	}, [current]);
+
+	// 🆕 acceptable answers now depend on promptMode
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
-		return current.translation
-			.split(/[/;,]| or /i)
-			.map((s) => normalize(s))
-			.filter(Boolean);
-	}, [current]);
+
+		if (promptMode === 'esToEn') {
+			// Spanish → English: accept any of the translation variants
+			return current.translation
+				.split(/[/;,]| or /i)
+				.map((s) => normalize(s))
+				.filter(Boolean);
+		}
+
+		// imageToEs or clozeEs → expect Spanish word
+		return [normalize(current.word)];
+	}, [current, promptMode]);
 
 	const onCheck = () => {
 		if (!current || status !== 'none') return;
@@ -116,12 +166,15 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 					? (existing?.firstTryCorrect ?? isCorrect) // review: keep first-try truth
 					: false; // lesson: ignore first-try entirely
 
+			// 🆕 what we consider the “expected” string, to show on wrong answers
+			const expected = promptMode === 'esToEn' ? current.translation : current.word;
+
 			return [
 				...filtered,
 				{
 					id: current.id,
 					word: current.word,
-					expected: current.translation,
+					expected,
 					userAnswer: guessRaw,
 					correct: isCorrect,
 					firstTryCorrect: firstTryCorrectValue,
@@ -219,12 +272,31 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 
 	const atLastScreen = cursor === queue.length - 1;
 
+	// 🆕 Build the prompt text based on mode
+	let title = '';
+	let subtitle: string | null = null;
+
+	if (promptMode === 'esToEn') {
+		title = `Type the English meaning for: ${current.word}`;
+		subtitle = null;
+	} else if (promptMode === 'imageToEs') {
+		title = 'Type this word in Spanish';
+		subtitle = current.translation; // optional hint — remove if you don’t want it
+	} else {
+		title = 'Fill in the blank in Spanish';
+		subtitle = clozeSentence ?? current.example ?? '';
+	}
+
+	// 🆕 what we display as the correct answer if user is wrong
+	const correctAnswerDisplay = promptMode === 'esToEn' ? current.translation : current.word;
+
 	return (
 		<>
 			<Header percentage={progress} total={total} correct={correct} remaining={remaining} />
 
 			<main className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center p-6 text-center">
-				{current.imageUrl ? (
+				{/* Image – still shown when available. Especially important for imageToEs */}
+				{current.imageUrl && (
 					<div className="mb-4 h-28 w-28">
 						<Image
 							src={current.imageUrl}
@@ -235,11 +307,13 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 							priority
 						/>
 					</div>
-				) : null}
+				)}
 
-				<h1 className="mb-4 text-2xl font-bold text-neutral-800">
-					Type the translation for: <span className="underline">{current.word}</span>
-				</h1>
+				<h1 className="mb-2 text-2xl font-bold text-neutral-800">{title}</h1>
+
+				{subtitle && (
+					<p className="mb-4 whitespace-pre-line text-lg text-neutral-700">{subtitle}</p>
+				)}
 
 				<form
 					className="w-full max-w-sm"
@@ -291,7 +365,7 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 					)}
 					{status === 'wrong' && (
 						<p className="text-sm text-red-700">
-							Correct answer: <span className="font-semibold">{current.translation}</span>
+							Correct answer: <span className="font-semibold">{correctAnswerDisplay}</span>
 						</p>
 					)}
 				</div>

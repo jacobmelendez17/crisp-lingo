@@ -13,13 +13,11 @@ function firstStr(v: string | string[] | undefined, fallback = ''): string {
 }
 
 export default async function LearnQuizPage({ searchParams }: PageProps) {
-	// ✅ await first (new Next.js requirement)
 	const params = await searchParams;
 
 	const typeParam = firstStr(params.type, 'lesson').toLowerCase();
 	const type = (typeParam === 'review' ? 'review' : 'lesson') as 'lesson' | 'review';
 
-	// support ?id= and ?ids=
 	const idsParam = firstStr(params.id) || firstStr(params.ids);
 	const ids = (idsParam || '')
 		.split(',')
@@ -31,6 +29,9 @@ export default async function LearnQuizPage({ searchParams }: PageProps) {
 		word: string;
 		translation: string;
 		imageUrl: string | null;
+		srsLevel?: number;
+		example?: string | null;
+		exampleTranslation?: string | null;
 	}> | null = null;
 
 	if (type === 'lesson') {
@@ -40,7 +41,10 @@ export default async function LearnQuizPage({ searchParams }: PageProps) {
 			id: r.id,
 			word: r.word,
 			translation: r.translation,
-			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
+			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null,
+			srsLevel: undefined,
+			example: null,
+			exampleTranslation: null
 		}));
 	} else {
 		const due = await getDueReviews();
@@ -56,7 +60,10 @@ export default async function LearnQuizPage({ searchParams }: PageProps) {
 			id: r.id,
 			word: r.word,
 			translation: r.translation,
-			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null
+			imageUrl: r.imageUrl ? (r.imageUrl.startsWith('/') ? r.imageUrl : `/${r.imageUrl}`) : null,
+			srsLevel: r.srsLevel ?? 0,
+			example: r.example ?? null,
+			exampleTranslation: r.exampleTranslation ?? null
 		}));
 	}
 

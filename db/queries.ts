@@ -166,6 +166,8 @@ export const getDueReviews = cache(async (limit?: number) => {
       word: vocab.word,
       translation: vocab.translation,
       imageUrl: vocab.imageUrl,
+      example: vocab.example,
+      exampleTranslation: vocab.exampleTranslation,
       srsLevel: userVocabSrs.srsLevel,
       nextReviewAt: userVocabSrs.nextReviewAt,
     })
