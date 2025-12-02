@@ -109,9 +109,6 @@ export default function SummaryPage() {
 					<h1 className="flex items-center gap-2 text-5xl font-bold text-neutral-900">
 						Session complete <span>🎉</span>
 					</h1>
-					<p className="mt-2 text-xl text-neutral-600">
-						{accuracy}% correct, {summary.total} answered.
-					</p>
 				</header>
 
 				{/* Correct / first-try stats */}
@@ -140,7 +137,7 @@ export default function SummaryPage() {
 				<section className="mb-5">
 					<div className="mb-2 flex items-center gap-2">
 						<h2 className="text-3xl font-semibold text-neutral-900">Correct answers</h2>
-						<span className="rounded-full bg-[#5ec3c6]/20 px-2.5 py-0.5 text-xs font-semibold text-[#116e72]">
+						<span className="rounded-full bg-[#5ec3c6]/20 px-3 py-2.5 text-xs font-semibold text-[#116e72]">
 							{correctRows.length}
 						</span>
 					</div>
@@ -172,7 +169,7 @@ export default function SummaryPage() {
 				<section className="mb-4">
 					<div className="mb-2 flex items-center gap-2">
 						<h2 className="text-3xl font-semibold text-neutral-900">Wrong answers</h2>
-						<span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
+						<span className="y-2.5 rounded-full bg-rose-100 px-3 text-xs font-semibold text-rose-700">
 							{wrongRows.length}
 						</span>
 					</div>

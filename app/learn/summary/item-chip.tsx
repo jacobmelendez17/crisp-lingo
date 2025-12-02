@@ -15,7 +15,7 @@ export function ItemChip({ word, imageUrl, tooltip }: ItemChipProps) {
 	return (
 		<div className="group relative inline-block">
 			{/* Chip */}
-			<div className="flex h-14 w-14 select-none items-center justify-center rounded-2xl bg-[#5ec3c6] text-neutral-900">
+			<div className="flex h-20 w-20 select-none items-center justify-center rounded-2xl bg-[#9ad0d2] text-neutral-900">
 				{imageUrl ? (
 					<Image
 						src={imageUrl}
@@ -25,7 +25,7 @@ export function ItemChip({ word, imageUrl, tooltip }: ItemChipProps) {
 						className="h-10 w-10 object-contain"
 					/>
 				) : (
-					<span className="px-1 text-center text-sm font-semibold text-neutral-900">{word}</span>
+					<span className="px-1 text-center text-lg font-semibold text-neutral-900">{word}</span>
 				)}
 			</div>
 
