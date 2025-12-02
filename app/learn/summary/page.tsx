@@ -21,6 +21,7 @@ type Summary = {
 	firstTryCorrect: number;
 	progressEnd: number;
 	rows: Row[];
+	duration?: number;
 };
 
 const MAX_VISIBLE_ICONS = 24;
@@ -105,10 +106,10 @@ export default function SummaryPage() {
 			<main className="mx-auto flex min-h-[calc(100vh-96px)] max-w-4xl flex-col px-6 pb-32 pt-8">
 				{/* Header */}
 				<header className="mb-4">
-					<h1 className="flex items-center gap-2 text-3xl font-bold text-neutral-900">
+					<h1 className="flex items-center gap-2 text-5xl font-bold text-neutral-900">
 						Session complete <span>🎉</span>
 					</h1>
-					<p className="mt-2 text-sm text-neutral-600">
+					<p className="mt-2 text-xl text-neutral-600">
 						{accuracy}% correct, {summary.total} answered.
 					</p>
 				</header>
@@ -116,29 +117,37 @@ export default function SummaryPage() {
 				{/* Correct / first-try stats */}
 				<section className="mb-6 grid grid-cols-3 gap-3 rounded-xl border border-black/5 bg-white p-4 text-sm">
 					<div>
-						<p className="text-xs text-neutral-500">Total items</p>
-						<p className="text-lg font-semibold text-neutral-900">{summary.total}</p>
+						<p className="text-2xl text-neutral-500">Total Items</p>
+						<p className="text-2xl font-semibold text-neutral-900">{summary.total}</p>
 					</div>
 					<div>
-						<p className="text-xs text-neutral-500">Correct (final)</p>
-						<p className="text-lg font-semibold text-neutral-900">{summary.correct}</p>
+						<p className="text-2xl text-neutral-500">Accuracy</p>
+						<p className="text-2xl font-semibold text-neutral-900">
+							{Math.round((summary.correct / summary.total) * 100)}%
+						</p>
 					</div>
 					<div>
-						<p className="text-xs text-neutral-500">First-try correct</p>
-						<p className="text-lg font-semibold text-neutral-900">{summary.firstTryCorrect}</p>
+						<p className="text-2xl text-neutral-500">Duration</p>
+						<p className="text-2xl font-semibold text-neutral-900">
+							{summary.duration
+								? `${Math.floor(summary.duration / 60)}m ${summary.duration % 60}s`
+								: '—'}
+						</p>
 					</div>
 				</section>
 
 				{/* Correct answers */}
 				<section className="mb-5">
 					<div className="mb-2 flex items-center gap-2">
-						<h2 className="text-lg font-semibold text-neutral-900">Correct answers</h2>
+						<h2 className="text-3xl font-semibold text-neutral-900">Correct answers</h2>
 						<span className="rounded-full bg-[#5ec3c6]/20 px-2.5 py-0.5 text-xs font-semibold text-[#116e72]">
 							{correctRows.length}
 						</span>
 					</div>
 					{correctRows.length === 0 ? (
-						<p className="text-sm text-neutral-500">No correct answers yet.</p>
+						<p className="text-xl text-neutral-500">
+							Umm...you didn't get any of them right. Like at all.
+						</p>
 					) : (
 						<>
 							<div className="flex flex-wrap gap-2">
@@ -162,13 +171,13 @@ export default function SummaryPage() {
 				{/* Wrong answers */}
 				<section className="mb-4">
 					<div className="mb-2 flex items-center gap-2">
-						<h2 className="text-lg font-semibold text-neutral-900">Wrong answers</h2>
+						<h2 className="text-3xl font-semibold text-neutral-900">Wrong answers</h2>
 						<span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
 							{wrongRows.length}
 						</span>
 					</div>
 					{wrongRows.length === 0 ? (
-						<p className="text-sm text-neutral-500">Nice! No misses this time.</p>
+						<p className="text-xl text-neutral-500">Nice! No misses this time.</p>
 					) : (
 						<>
 							<div className="flex flex-wrap gap-2">
@@ -193,22 +202,13 @@ export default function SummaryPage() {
 				<SessionProgressChart rows={summary.rows} />
 			</main>
 
-			{/* Sticky blurred footer */}
-			<div className="fixed inset-x-0 bottom-0 border-t border-black/10 bg-[#fffdf7]/80 backdrop-blur-md">
-				<div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-6 py-3">
-					<Button asChild variant="sage" size="lg" className="flex-1">
-						<a href="/learn">Quiz again</a>
+			<div className="fixed inset-x-0 bottom-0 border-t border-black/10 bg-[#fffdf7]/90 backdrop-blur-xl">
+				<div className="mx-auto flex max-w-4xl items-center justify-center gap-6 px-6 py-12">
+					<Button asChild variant="sage" size="lg" className="px-10 py-8 text-lg font-semibold">
+						<a href="/dashboard">Back to Dashboard</a>
 					</Button>
-					<Button
-						asChild
-						variant="secondary"
-						size="lg"
-						className="flex-1 border border-rose-300 text-rose-800 hover:bg-rose-50"
-					>
-						<a href="/learn?retry=incorrect">Retry incorrect</a>
-					</Button>
-					<Button asChild variant="secondary" size="lg" className="flex-[0.8] text-neutral-800">
-						<a href="/history">History</a>
+					<Button asChild variant="outline" size="lg" className="px-10 py-8 text-lg font-semibold">
+						<a href="/dashboard">Review Incorrect</a>
 					</Button>
 				</div>
 			</div>

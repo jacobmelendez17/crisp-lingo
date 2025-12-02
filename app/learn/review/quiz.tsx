@@ -87,6 +87,8 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const correctForLesson = sessionType === 'review' ? firstTryCorrect : correct;
 	const remaining = Math.max(0, total - correct);
 
+	const startTimeRef = useRef<number>(Date.now());
+
 	// 🆕 decide what kind of prompt to show for the current item
 	const promptMode: PromptMode = useMemo(() => {
 		if (!current) return 'esToEn';
@@ -221,6 +223,9 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		const upIds = rows.filter((r) => r.firstTryCorrect).map((r) => r.id);
 		const downIds = rows.filter((r) => !r.firstTryCorrect).map((r) => r.id);
 
+		const elapsedMs = Date.now() - startTimeRef.current;
+		const duration = Math.round(elapsedMs / 1000);
+
 		(async () => {
 			try {
 				if (sessionType === 'lesson') {
@@ -241,7 +246,8 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 				correct: firstTryCorrect,
 				firstTryCorrect,
 				progressEnd: progress,
-				rows
+				rows,
+				duration
 			};
 
 			try {
