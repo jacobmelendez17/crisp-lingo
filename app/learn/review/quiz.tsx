@@ -43,6 +43,7 @@ type ResultRow = {
 	correct: boolean;
 	firstTryCorrect: boolean;
 	attempts: number;
+	imageUrl?: string | null;
 };
 
 // 🆕 what kind of prompt we’re showing
@@ -178,7 +179,8 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 					userAnswer: guessRaw,
 					correct: isCorrect,
 					firstTryCorrect: firstTryCorrectValue,
-					attempts: (attempts[current.id] ?? 0) + 1
+					attempts: (attempts[current.id] ?? 0) + 1,
+					imageUrl: current.imageUrl ?? null
 				}
 			];
 		});

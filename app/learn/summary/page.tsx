@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { ItemChip } from './item-chip';
 
 type Row = {
 	id: number;
@@ -11,6 +12,7 @@ type Row = {
 	correct: boolean;
 	firstTryCorrect: boolean;
 	attempts: number;
+	imageUrl?: string | null;
 };
 
 type Summary = {
@@ -61,23 +63,6 @@ function SessionProgressChart({ rows }: { rows: Row[] }) {
 					fill="none"
 				/>
 			</svg>
-		</div>
-	);
-}
-
-function ItemChip({ row }: { row: Row }) {
-	return (
-		<div className="group relative">
-			<div className="flex min-w-[2.5rem] items-center justify-center rounded-2xl bg-[#5ec3c6] px-3 py-2 text-sm font-semibold text-neutral-900">
-				{row.word}
-			</div>
-			{/* tooltip with Spanish word (could also show translation if you want) */}
-			<div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-2 opacity-0 transition-opacity group-hover:-translate-y-3 group-hover:opacity-100">
-				<div className="mb-1 h-0 w-0 border-x-8 border-b-8 border-x-transparent border-b-[#221b29]" />
-				<div className="whitespace-nowrap rounded-full bg-[#221b29] px-2.5 py-1 text-xs font-semibold text-white">
-					{row.word}
-				</div>
-			</div>
 		</div>
 	);
 }
@@ -158,7 +143,7 @@ export default function SummaryPage() {
 						<>
 							<div className="flex flex-wrap gap-2">
 								{visibleCorrect.map((r) => (
-									<ItemChip key={r.id} row={r} />
+									<ItemChip key={r.id} word={r.word} imageUrl={r.imageUrl} tooltip={r.word} />
 								))}
 							</div>
 							{correctRows.length > MAX_VISIBLE_ICONS && (
@@ -188,7 +173,7 @@ export default function SummaryPage() {
 						<>
 							<div className="flex flex-wrap gap-2">
 								{visibleWrong.map((r) => (
-									<ItemChip key={r.id} row={r} />
+									<ItemChip key={r.id} word={r.word} imageUrl={r.imageUrl} tooltip={r.word} />
 								))}
 							</div>
 							{wrongRows.length > MAX_VISIBLE_ICONS && (
