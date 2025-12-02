@@ -7,9 +7,10 @@ import { Settings, Bell, User, Brain } from 'lucide-react';
 
 const links = [
 	{ id: 'general', href: '/settings', label: 'General', icon: Settings },
-	{ id: 'notifications', href: '/settings/notifications', label: 'Notifications', icon: Bell },
 	{ id: 'account', href: '/settings/account', label: 'Account', icon: User },
-	{ id: 'srs', href: '/settings/srs', label: 'SRS & Reviews', icon: Brain }
+	{ id: 'appearance', href: '/settings/appearance', label: 'Appearance', icon: User },
+	{ id: 'notifications', href: '/settings/notifications', label: 'Notifications', icon: Bell },
+	{ id: 'api', href: '/settings/api', label: 'SRS & Reviews', icon: Brain }
 ];
 
 export function SettingsSidebar() {
