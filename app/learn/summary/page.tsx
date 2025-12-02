@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 
 type Row = {
@@ -21,8 +21,71 @@ type Summary = {
 	rows: Row[];
 };
 
+const MAX_VISIBLE_ICONS = 24;
+
+function SessionProgressChart({ rows }: { rows: Row[] }) {
+	if (!rows.length) return null;
+
+	// cumulative accuracy over the session
+	const values: number[] = [];
+	let runningCorrect = 0;
+	rows.forEach((r, idx) => {
+		if (r.correct) runningCorrect++;
+		values.push(runningCorrect / (idx + 1)); // 0–1
+	});
+
+	const points = values.map((v, idx) => {
+		const x = values.length === 1 ? 0 : (idx / (values.length - 1)) * 100; // 0–100
+		const y = 40 - v * 40; // 0–40, invert so higher accuracy is higher on chart
+		return `${x},${y}`;
+	});
+
+	return (
+		<div className="mt-4 rounded-xl border border-black/5 bg-white px-4 pb-4 pt-3">
+			<div className="mb-2 flex items-center justify-between">
+				<h2 className="text-sm font-semibold text-neutral-800">Session progress</h2>
+				<span className="text-xs text-neutral-500">Accuracy over this quiz</span>
+			</div>
+			<svg
+				viewBox="0 0 100 40"
+				className="h-20 w-full text-[var(--leaf,#6c9c6a)]"
+				preserveAspectRatio="none"
+			>
+				{/* baseline */}
+				<line x1={0} y1={40} x2={100} y2={40} className="stroke-neutral-200" strokeWidth={0.8} />
+				{/* line */}
+				<polyline
+					points={points.join(' ')}
+					className="stroke-current"
+					strokeWidth={2}
+					fill="none"
+				/>
+			</svg>
+		</div>
+	);
+}
+
+function ItemChip({ row }: { row: Row }) {
+	return (
+		<div className="group relative">
+			<div className="flex min-w-[2.5rem] items-center justify-center rounded-2xl bg-[#5ec3c6] px-3 py-2 text-sm font-semibold text-neutral-900">
+				{row.word}
+			</div>
+			{/* tooltip with Spanish word (could also show translation if you want) */}
+			<div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-2 opacity-0 transition-opacity group-hover:-translate-y-3 group-hover:opacity-100">
+				<div className="mb-1 h-0 w-0 border-x-8 border-b-8 border-x-transparent border-b-[#221b29]" />
+				<div className="whitespace-nowrap rounded-full bg-[#221b29] px-2.5 py-1 text-xs font-semibold text-white">
+					{row.word}
+				</div>
+			</div>
+		</div>
+	);
+}
+
 export default function SummaryPage() {
 	const [summary, setSummary] = useState<Summary | null>(null);
+	const [showAllCorrect, setShowAllCorrect] = useState(false);
+	const [showAllWrong, setShowAllWrong] = useState(false);
 
 	useEffect(() => {
 		try {
@@ -33,61 +96,137 @@ export default function SummaryPage() {
 		}
 	}, []);
 
-	if (!summary) return null;
+	const computed = useMemo(() => {
+		if (!summary) return null;
+
+		const correctRows = summary.rows.filter((r) => r.correct);
+		const wrongRows = summary.rows.filter((r) => !r.correct);
+
+		const accuracy = summary.total > 0 ? Math.round((summary.correct / summary.total) * 100) : 0;
+
+		return { correctRows, wrongRows, accuracy };
+	}, [summary]);
+
+	if (!summary || !computed) return null;
+
+	const { correctRows, wrongRows, accuracy } = computed;
+
+	const visibleCorrect = showAllCorrect ? correctRows : correctRows.slice(0, MAX_VISIBLE_ICONS);
+	const visibleWrong = showAllWrong ? wrongRows : wrongRows.slice(0, MAX_VISIBLE_ICONS);
 
 	return (
-		<main className="mx-auto max-w-3xl p-6">
-			<h1 className="mb-4 text-3xl font-bold text-neutral-800">Lesson Summary</h1>
+		<>
+			{/* main content with extra bottom padding so footer doesn’t cover it */}
+			<main className="mx-auto flex min-h-[calc(100vh-96px)] max-w-4xl flex-col px-6 pb-32 pt-8">
+				{/* Header */}
+				<header className="mb-4">
+					<h1 className="flex items-center gap-2 text-3xl font-bold text-neutral-900">
+						Session complete <span>🎉</span>
+					</h1>
+					<p className="mt-2 text-sm text-neutral-600">
+						{accuracy}% correct, {summary.total} answered.
+					</p>
+				</header>
 
-			<section className="mb-6 grid grid-cols-2 gap-4 rounded-xl border border-black/5 bg-white p-4">
-				<div>
-					<p className="text-sm text-neutral-500">Total Items</p>
-					<p className="text-xl font-semibold">{summary.total}</p>
-				</div>
-				<div>
-					<p className="text-sm text-neutral-500">Correct (final)</p>
-					<p className="text-xl font-semibold">{summary.correct}</p>
-				</div>
-				<div>
-					<p className="text-sm text-neutral-500">First-try correct</p>
-					<p className="text-xl font-semibold">{summary.firstTryCorrect}</p>
-				</div>
-				<div>
-					<p className="text-sm text-neutral-500">Progress</p>
-					<p className="text-xl font-semibold">{Math.round(summary.progressEnd)}%</p>
-				</div>
-			</section>
+				{/* Correct / first-try stats */}
+				<section className="mb-6 grid grid-cols-3 gap-3 rounded-xl border border-black/5 bg-white p-4 text-sm">
+					<div>
+						<p className="text-xs text-neutral-500">Total items</p>
+						<p className="text-lg font-semibold text-neutral-900">{summary.total}</p>
+					</div>
+					<div>
+						<p className="text-xs text-neutral-500">Correct (final)</p>
+						<p className="text-lg font-semibold text-neutral-900">{summary.correct}</p>
+					</div>
+					<div>
+						<p className="text-xs text-neutral-500">First-try correct</p>
+						<p className="text-lg font-semibold text-neutral-900">{summary.firstTryCorrect}</p>
+					</div>
+				</section>
 
-			<section className="rounded-xl border border-black/5 bg-white p-4">
-				<h2 className="mb-3 text-xl font-semibold">Items</h2>
-				<div className="divide-y">
-					{summary.rows.map((r) => (
-						<div key={r.id} className="py-3">
-							<div className="flex items-center justify-between">
-								<div className="font-semibold">{r.word}</div>
-								<div className={`text-sm ${r.correct ? 'text-green-700' : 'text-red-700'}`}>
-									{r.correct ? 'Correct' : 'Incorrect'}
-								</div>
+				{/* Correct answers */}
+				<section className="mb-5">
+					<div className="mb-2 flex items-center gap-2">
+						<h2 className="text-lg font-semibold text-neutral-900">Correct answers</h2>
+						<span className="rounded-full bg-[#5ec3c6]/20 px-2.5 py-0.5 text-xs font-semibold text-[#116e72]">
+							{correctRows.length}
+						</span>
+					</div>
+					{correctRows.length === 0 ? (
+						<p className="text-sm text-neutral-500">No correct answers yet.</p>
+					) : (
+						<>
+							<div className="flex flex-wrap gap-2">
+								{visibleCorrect.map((r) => (
+									<ItemChip key={r.id} row={r} />
+								))}
 							</div>
-							<div className="mt-1 text-sm text-neutral-600">
-								<div>
-									Expected: <span className="font-medium">{r.expected}</span>
-								</div>
-								<div>
-									Your answer: <span className="font-medium">{r.userAnswer || '(blank)'}</span>
-								</div>
-								<div>Attempts: {r.attempts}</div>
-								<div>First try correct: {r.firstTryCorrect ? 'Yes' : 'No'}</div>
+							{correctRows.length > MAX_VISIBLE_ICONS && (
+								<button
+									type="button"
+									onClick={() => setShowAllCorrect((v) => !v)}
+									className="mt-2 text-sm font-medium text-[var(--leaf,#6c9c6a)] underline-offset-2 hover:underline"
+								>
+									{showAllCorrect ? 'Show fewer correct answers' : 'Show more correct answers'}
+								</button>
+							)}
+						</>
+					)}
+				</section>
+
+				{/* Wrong answers */}
+				<section className="mb-4">
+					<div className="mb-2 flex items-center gap-2">
+						<h2 className="text-lg font-semibold text-neutral-900">Wrong answers</h2>
+						<span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
+							{wrongRows.length}
+						</span>
+					</div>
+					{wrongRows.length === 0 ? (
+						<p className="text-sm text-neutral-500">Nice! No misses this time.</p>
+					) : (
+						<>
+							<div className="flex flex-wrap gap-2">
+								{visibleWrong.map((r) => (
+									<ItemChip key={r.id} row={r} />
+								))}
 							</div>
-						</div>
-					))}
+							{wrongRows.length > MAX_VISIBLE_ICONS && (
+								<button
+									type="button"
+									onClick={() => setShowAllWrong((v) => !v)}
+									className="mt-2 text-sm font-medium text-[var(--leaf,#6c9c6a)] underline-offset-2 hover:underline"
+								>
+									{showAllWrong ? 'Show fewer wrong answers' : 'Show more wrong answers'}
+								</button>
+							)}
+						</>
+					)}
+				</section>
+
+				{/* Line chart */}
+				<SessionProgressChart rows={summary.rows} />
+			</main>
+
+			{/* Sticky blurred footer */}
+			<div className="fixed inset-x-0 bottom-0 border-t border-black/10 bg-[#fffdf7]/80 backdrop-blur-md">
+				<div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-6 py-3">
+					<Button asChild variant="sage" size="lg" className="flex-1">
+						<a href="/learn">Quiz again</a>
+					</Button>
+					<Button
+						asChild
+						variant="secondary"
+						size="lg"
+						className="flex-1 border border-rose-300 text-rose-800 hover:bg-rose-50"
+					>
+						<a href="/learn?retry=incorrect">Retry incorrect</a>
+					</Button>
+					<Button asChild variant="secondary" size="lg" className="flex-[0.8] text-neutral-800">
+						<a href="/history">History</a>
+					</Button>
 				</div>
-			</section>
-			<div className="mt-10 flex justify-center">
-				<Button asChild variant="sage" size="lg" className="px-10 py-4 text-lg">
-					<a href="/dashboard">Back to Dashboard</a>
-				</Button>
 			</div>
-		</main>
+		</>
 	);
 }

@@ -8,36 +8,69 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 const MAX_LEVEL = 8;
 const MIN_LEVEL = 1;
 
-const IS_DEBUG = process.env.SRS_DEBUG === 'false';
-const L1_INTERVAL_SQL = IS_DEBUG ? sql`INTERVAL '1 minute'` : sql`INTERVAL '1 minute'`;
+// Set SRS_DEBUG=true in .env.local to enable fast “debug” mode
+const IS_DEBUG = process.env.SRS_DEBUG === 'true';
+console.log("SRS debug mode: ", IS_DEBUG);
+
+// Level 1 interval (special-cased)
+const L1_INTERVAL_SQL = IS_DEBUG
+  ? sql`INTERVAL '30 seconds'`      // debug: super fast
+  : sql`INTERVAL '4 hours'`;        // prod: real SRS
 
 // Intervals for promotion: based on the *new* level after +1
-const INTERVAL_CASE_UP = sql`
-  CASE LEAST(${userVocabSrs.srsLevel} + 1, ${MAX_LEVEL})
-    WHEN 1 THEN ${L1_INTERVAL_SQL}
-    WHEN 2 THEN INTERVAL '8 hours'
-    WHEN 3 THEN INTERVAL '1 day'
-    WHEN 4 THEN INTERVAL '2 days'
-    WHEN 5 THEN INTERVAL '1 week'
-    WHEN 6 THEN INTERVAL '2 weeks'
-    WHEN 7 THEN INTERVAL '1 month'
-    WHEN 8 THEN INTERVAL '4 months'
-  END
-`;
+const INTERVAL_CASE_UP = IS_DEBUG
+  ? sql`
+      CASE LEAST(${userVocabSrs.srsLevel} + 1, ${MAX_LEVEL})
+        WHEN 1 THEN INTERVAL '30 seconds'
+        WHEN 2 THEN INTERVAL '30 seconds'
+        WHEN 3 THEN INTERVAL '30 seconds'
+        WHEN 4 THEN INTERVAL '30 seconds'
+        WHEN 5 THEN INTERVAL '30 seconds'
+        WHEN 6 THEN INTERVAL '30 seconds'
+        WHEN 7 THEN INTERVAL '30 seconds'
+        WHEN 8 THEN INTERVAL '30 seconds'
+      END
+    `
+  : sql`
+      CASE LEAST(${userVocabSrs.srsLevel} + 1, ${MAX_LEVEL})
+        WHEN 1 THEN ${L1_INTERVAL_SQL}   -- 4h
+        WHEN 2 THEN INTERVAL '8 hours'
+        WHEN 3 THEN INTERVAL '1 day'
+        WHEN 4 THEN INTERVAL '2 days'
+        WHEN 5 THEN INTERVAL '1 week'
+        WHEN 6 THEN INTERVAL '2 weeks'
+        WHEN 7 THEN INTERVAL '1 month'
+        WHEN 8 THEN INTERVAL '4 months'
+      END
+    `;
 
 // Intervals for demotion: based on the *new* level after -1
-const INTERVAL_CASE_DOWN = sql`
-  CASE GREATEST(${userVocabSrs.srsLevel} - 1, ${MIN_LEVEL}) 
-    WHEN 1 THEN ${L1_INTERVAL_SQL}
-    WHEN 2 THEN INTERVAL '8 hours'
-    WHEN 3 THEN INTERVAL '1 day'
-    WHEN 4 THEN INTERVAL '2 days'
-    WHEN 5 THEN INTERVAL '1 week'
-    WHEN 6 THEN INTERVAL '2 weeks'
-    WHEN 7 THEN INTERVAL '1 month'
-    WHEN 8 THEN INTERVAL '4 months'
-  END
-`;
+const INTERVAL_CASE_DOWN = IS_DEBUG
+  ? sql`
+      CASE GREATEST(${userVocabSrs.srsLevel} - 1, ${MIN_LEVEL})
+        WHEN 1 THEN INTERVAL '30 seconds'
+        WHEN 2 THEN INTERVAL '1 minute'
+        WHEN 3 THEN INTERVAL '2 minutes'
+        WHEN 4 THEN INTERVAL '5 minutes'
+        WHEN 5 THEN INTERVAL '10 minutes'
+        WHEN 6 THEN INTERVAL '20 minutes'
+        WHEN 7 THEN INTERVAL '30 minutes'
+        WHEN 8 THEN INTERVAL '60 minutes'
+      END
+    `
+  : sql`
+      CASE GREATEST(${userVocabSrs.srsLevel} - 1, ${MIN_LEVEL})
+        WHEN 1 THEN ${L1_INTERVAL_SQL}
+        WHEN 2 THEN INTERVAL '8 hours'
+        WHEN 3 THEN INTERVAL '1 day'
+        WHEN 4 THEN INTERVAL '2 days'
+        WHEN 5 THEN INTERVAL '1 week'
+        WHEN 6 THEN INTERVAL '2 weeks'
+        WHEN 7 THEN INTERVAL '1 month'
+        WHEN 8 THEN INTERVAL '4 months'
+      END
+    `;
+
 
 /**
  * After a lesson quiz passes for a set of vocabIds, set them to SRS level 1
