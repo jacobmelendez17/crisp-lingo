@@ -9,8 +9,11 @@ const links = [
 	{ id: 'general', href: '/settings', label: 'General', icon: Settings },
 	{ id: 'account', href: '/settings/account', label: 'Account', icon: User },
 	{ id: 'appearance', href: '/settings/appearance', label: 'Appearance', icon: User },
+	{ id: 'reviews', href: '/settings/reviews', label: 'SRS & Reviews', icon: User },
 	{ id: 'notifications', href: '/settings/notifications', label: 'Notifications', icon: Bell },
-	{ id: 'api', href: '/settings/api', label: 'SRS & Reviews', icon: Brain }
+	{ id: 'subscription', href: '/settings/subscription', label: 'Subscription', icon: Bell },
+	{ id: 'api', href: '/settings/api', label: 'API', icon: Brain },
+	{ id: 'danger zone', href: '/settings/reset', label: 'Reset', icon: Brain }
 ];
 
 export function SettingsSidebar() {
