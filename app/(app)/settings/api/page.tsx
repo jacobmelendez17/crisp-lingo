@@ -1,4 +1,4 @@
-export default function AccountSettingsPage() {
+export default function ApiSettingsPage() {
 	return (
 		<div className="space-y-6">
 			<header>
