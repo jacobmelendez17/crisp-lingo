@@ -1,0 +1,1 @@
+ALTER TABLE "vocab" ADD COLUMN "variants" text;

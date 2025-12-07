@@ -54,6 +54,7 @@ export const vocab = pgTable("vocab", {
     mnemonic: text("mnemonic"),
     partOfSpeech: varchar("part_of_speech", { length: 64 }),
     synonyms: text("synonyms"),
+    variants: text("variants"),
     imageUrl: text("image_src"),
     audioUrl: text("audio_src"),
     levelId: integer("level_id").references(() => levels.id, { onDelete: "cascade" }).notNull(),
