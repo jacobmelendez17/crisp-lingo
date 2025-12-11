@@ -13,27 +13,21 @@ export default function ReviewsSettingsPage() {
 	const [reviewOrder, setReviewOrder] = useState<ReviewOrder>('mixed');
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-10">
 			<header>
-				<h1 className="text-3xl font-bold text-neutral-900">SRS &amp; Reviews</h1>
-				<p className="mt-1 text-sm text-neutral-500">
-					Tune how many lessons you see per day and how your reviews are scheduled.
-				</p>
+				<h1 className="text-4xl font-bold text-neutral-900">SRS &amp; Reviews</h1>
 			</header>
 
 			{/* LESSON SETTINGS */}
-			<section className="space-y-4 rounded-xl border border-black/5 bg-[#fffdf9] p-4 sm:p-6">
-				<h2 className="text-xl font-semibold text-neutral-800">Lessons</h2>
-				<p className="text-sm text-neutral-500">
-					Control how many new items you unlock and how big each lesson batch is.
-				</p>
+			<section className="space-y-6 rounded-xl border border-black/5 bg-[#fffdf9] p-6 sm:p-8">
+				<h2 className="text-3xl font-semibold text-neutral-900">Lessons</h2>
 
-				<div className="mt-4 space-y-4">
+				<div className="mt-4 space-y-6">
 					{/* Lesson cap */}
-					<div className="flex flex-col gap-2 rounded-lg border border-black/5 bg-white/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-col gap-3 rounded-lg border border-black/5 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<p className="text-sm font-semibold text-neutral-800">Daily lesson cap</p>
-							<p className="text-xs text-neutral-500">
+							<p className="text-xl font-semibold text-neutral-900">Daily lesson cap</p>
+							<p className="text-md text-neutral-600">
 								Max number of new lessons you can start in a single day.
 							</p>
 						</div>
@@ -47,10 +41,10 @@ export default function ReviewsSettingsPage() {
 					</div>
 
 					{/* Lesson batch size */}
-					<div className="flex flex-col gap-2 rounded-lg border border-black/5 bg-white/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-col gap-3 rounded-lg border border-black/5 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<p className="text-sm font-semibold text-neutral-800">Lesson batch size</p>
-							<p className="text-xs text-neutral-500">
+							<p className="text-xl font-semibold text-neutral-900">Lesson batch size</p>
+							<p className="text-md text-neutral-600">
 								How many new items appear together in one lesson session.
 							</p>
 						</div>
@@ -66,19 +60,16 @@ export default function ReviewsSettingsPage() {
 			</section>
 
 			{/* REVIEW SETTINGS */}
-			<section className="space-y-4 rounded-xl border border-black/5 bg-[#fffdf9] p-4 sm:p-6">
-				<h2 className="text-xl font-semibold text-neutral-800">Reviews</h2>
-				<p className="text-sm text-neutral-500">
-					Choose how intense your review sessions feel and how items are ordered.
-				</p>
+			<section className="space-y-6 rounded-xl border border-black/5 bg-[#fffdf9] p-6 sm:p-8">
+				<h2 className="text-3xl font-semibold text-neutral-900">Reviews</h2>
 
-				{/* Review mode: radio cards with image/name/description */}
+				{/* Review mode: radio cards */}
 				<div className="mt-4">
 					<ReviewModeOptions value={reviewMode} onChange={setReviewMode} />
 				</div>
 
-				{/* Review order: simple radio rows */}
-				<div className="mt-6">
+				{/* Review order */}
+				<div className="mt-8">
 					<ReviewOrderOptions value={reviewOrder} onChange={setReviewOrder} />
 				</div>
 			</section>
