@@ -22,6 +22,10 @@ export const srsStatusEnum = pgEnum("srs_status", [
     "completed",
     "suspended"
 ] as const);
+export const reviewModeEnum = pgEnum('review_mode', ['standard', 'lightning', 'relaxed'] as const);
+export const reviewOrderEnum = pgEnum('review_order', ['mixed', 'oldest', 'newest'] as const);
+export const notifyChannelEnum = pgEnum('notify_channel', ['email', 'sms', 'both'] as const);
+
 
 export const users = pgTable("users", {
     userId: text("user_id").primaryKey(),
@@ -114,7 +118,7 @@ export const grammar = pgTable("grammar", {
 
 export const userGrammarSrs = pgTable("user_grammar_srs", {
     userId: text("user_id").notNull(),
-    grammarId: integer("grammar_id").references(() => vocab.id, { onDelete: "cascade" }).notNull(),
+    grammarId: integer("grammar_id").references(() => grammar.id, { onDelete: "cascade" }).notNull(),
     srsLevel: integer("srs_level").notNull().default(0),
     firstLearnedAt: timestamp("first_learned_at", { withTimezone: true }),
     lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
@@ -138,3 +142,30 @@ export const userProgress = pgTable("user_progress", {
     learnedWords: integer("learned_words").notNull().default(0),
     learnedGrammar: integer("learned_grammar").notNull().default(0),
 });
+
+export const userSettings = pgTable(
+  'user_settings',
+  {
+    userId: text('user_id')
+      .primaryKey()
+      .references(() => users.userId, { onDelete: 'cascade' }),
+
+    lessonCap: integer('lesson_cap').notNull().default(20),
+    lessonBatchSize: integer('lesson_batch_size').notNull().default(5),
+
+    reviewMode: reviewModeEnum('review_mode').notNull().default('standard'),
+    reviewOrder: reviewOrderEnum('review_order').notNull().default('mixed'),
+
+    notifyChannel: notifyChannelEnum('notify_channel').notNull().default('email'),
+    notifyNewsUpdates: boolean('notify_news_updates').notNull().default(true),
+    notifyProgress: boolean('notify_progress').notNull().default(true),
+    notifyInactivity: boolean('notify_inactivity').notNull().default(false),
+    notifyTrialAlerts: boolean('notify_trial_alerts').notNull().default(true),
+
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('user_settings_notify_idx').on(t.notifyChannel),
+  ]
+);
