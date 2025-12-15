@@ -92,12 +92,12 @@ export function ProfileDropdown({
 					<ul className="py-1 text-[15px]">
 						<li>
 							<Link
-								href="/account"
+								href="/progress"
 								role="menuitem"
 								className="block px-4 py-2 hover:bg-neutral-100"
 								onClick={() => setOpen(false)}
 							>
-								Profile
+								Progress
 							</Link>
 						</li>
 						<li>

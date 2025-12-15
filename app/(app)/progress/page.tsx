@@ -30,9 +30,9 @@ const GRAMMAR_COMPLETION = 9; // %
 export default function ProgressPage() {
 	return (
 		<main className="mx-auto w-full max-w-[1400px] px-4 py-8 lg:px-6">
-			<header className="mb-6">
-				<h1 className="text-4xl font-bold text-neutral-800">Progress</h1>
-				<p className="mt-1 text-sm text-neutral-600">
+			<header className="mb-6 text-center">
+				<h1 className="text-5xl font-bold text-neutral-800">Progress</h1>
+				<p className="mt-1 text-xl text-neutral-600">
 					See your study streak, level progression, and overall completion.
 				</p>
 			</header>
