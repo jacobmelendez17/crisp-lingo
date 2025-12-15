@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { DeleteModal } from '@/components/ui/modals/delete-modal';
+import { DangerActionButton } from './danger-action-button';
 
 export default function ResetSettingsPage() {
 	return (
@@ -23,9 +23,7 @@ export default function ResetSettingsPage() {
 								</p>
 							</div>
 
-							<Button variant="outline" size="sm" asChild>
-								<Link href="/settings/reset/vocabulary">Reset</Link>
-							</Button>
+							<DangerActionButton action="reset_vocab">Reset</DangerActionButton>
 						</div>
 
 						<div className="flex items-center justify-between gap-4">
@@ -36,9 +34,7 @@ export default function ResetSettingsPage() {
 								</p>
 							</div>
 
-							<Button variant="outline" size="sm" asChild>
-								<Link href="/settings/reset/grammar">Reset</Link>
-							</Button>
+							<DangerActionButton action="reset_grammar">Reset</DangerActionButton>
 						</div>
 
 						<div className="flex items-center justify-between gap-4">
@@ -49,9 +45,7 @@ export default function ResetSettingsPage() {
 								</p>
 							</div>
 
-							<Button variant="outline" size="sm" asChild onClick={() => open('reset_vocab')}>
-								<Link href="/settings/reset/account">Reset</Link>
-							</Button>
+							<DangerActionButton action="reset_account">Reset</DangerActionButton>
 						</div>
 					</div>
 				</section>
@@ -68,9 +62,9 @@ export default function ResetSettingsPage() {
 							</p>
 						</div>
 
-						<Button variant="destructive" size="sm" asChild>
-							<Link href="/settings/reset/delete-account">Delete</Link>
-						</Button>
+						<DangerActionButton action="delete_account" variant="destructive">
+							Delete
+						</DangerActionButton>
 					</div>
 				</section>
 			</div>
