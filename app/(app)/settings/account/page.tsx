@@ -21,17 +21,13 @@ export default async function AccountSettingsPage() {
 		<div className="space-y-6">
 			<header>
 				<h1 className="text-3xl font-bold text-neutral-900">Personal Information</h1>
-				<p className="mt-1 text-sm text-neutral-500">
-					View and update the details connected to your Crisp Lingo account.
-				</p>
 			</header>
 
 			<div className="grid gap-4">
-				{/* NAME */}
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
 						<div>
-							<h2 className="mb-1 text-lg font-semibold text-neutral-800">Name</h2>
+							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Name</h2>
 							<p className="text-sm text-neutral-600">{fullName}</p>
 						</div>
 
@@ -45,7 +41,7 @@ export default async function AccountSettingsPage() {
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
 						<div>
-							<h2 className="mb-1 text-lg font-semibold text-neutral-800">Email</h2>
+							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Email</h2>
 							<p className="break-all text-sm text-neutral-600">{email}</p>
 						</div>
 
@@ -59,7 +55,7 @@ export default async function AccountSettingsPage() {
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
 						<div>
-							<h2 className="mb-1 text-lg font-semibold text-neutral-800">Username</h2>
+							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Username</h2>
 							<p className="text-sm text-neutral-600">{username}</p>
 						</div>
 
@@ -73,7 +69,7 @@ export default async function AccountSettingsPage() {
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
 						<div>
-							<h2 className="mb-1 text-lg font-semibold text-neutral-800">Password</h2>
+							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Password</h2>
 							<p className="text-sm text-neutral-600">
 								For your security, your current password isn&apos;t shown.
 							</p>
