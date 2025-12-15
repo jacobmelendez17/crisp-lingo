@@ -1,23 +1,18 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { DeleteModal } from '@/components/ui/modals/delete-modal';
 
 export default function ResetSettingsPage() {
 	return (
 		<div className="space-y-6">
 			<header>
 				<h1 className="text-3xl font-bold text-neutral-900">Danger Zone</h1>
-				<p className="mt-1 text-sm text-neutral-600">
-					These actions can’t be undone. Resetting will wipe progress and review history.
-				</p>
 			</header>
 
 			<div className="grid gap-4">
 				{/* RESET */}
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
-					<h2 className="mb-1 text-lg font-semibold text-neutral-800">Reset</h2>
-					<p className="mb-4 text-sm text-neutral-600">
-						Clear study progress while keeping your account.
-					</p>
+					<h2 className="mb-1 text-xl font-semibold text-neutral-800">Reset</h2>
 
 					<div className="space-y-3">
 						<div className="flex items-center justify-between gap-4">
@@ -54,7 +49,7 @@ export default function ResetSettingsPage() {
 								</p>
 							</div>
 
-							<Button variant="outline" size="sm" asChild>
+							<Button variant="outline" size="sm" asChild onClick={() => open('reset_vocab')}>
 								<Link href="/settings/reset/account">Reset</Link>
 							</Button>
 						</div>
@@ -63,10 +58,7 @@ export default function ResetSettingsPage() {
 
 				{/* DELETE */}
 				<section className="rounded-xl border border-red-500/20 bg-[#fff7f7] p-4">
-					<h2 className="mb-1 text-lg font-semibold text-red-700">Delete</h2>
-					<p className="mb-4 text-sm text-red-700/80">
-						Permanently delete your account and all associated data.
-					</p>
+					<h2 className="mb-1 text-xl font-semibold text-red-700">Delete</h2>
 
 					<div className="flex items-center justify-between gap-4">
 						<div className="min-w-0 flex-1">

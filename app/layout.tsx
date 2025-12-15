@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Patrick_Hand } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ExitModal } from '@/components/ui/modals/exit-modal';
-//import { DeleteModal } from '@/components/ui/modals/delete-modal';
+import { DeleteModal } from '@/components/ui/modals/delete-modal';
 import './globals.css';
 
 const font = Patrick_Hand({ subsets: ['latin'], weight: ['400'] });
@@ -22,6 +22,7 @@ export default function RootLayout({
 			<html lang="en">
 				<body className={font.className}>
 					<ExitModal />
+					<DeleteModal />
 					{children}
 				</body>
 			</html>
