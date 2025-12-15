@@ -28,7 +28,7 @@ function TextInput({
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
 			placeholder={placeholder}
-			className="h-9 w-full max-w-md rounded-lg border border-black/15 bg-white px-3 text-sm text-neutral-800 outline-none focus:border-black"
+			className="h-9 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-neutral-800 outline-none focus:border-black"
 		/>
 	);
 }
@@ -39,17 +39,19 @@ export function AccountSettingsClient({ fullName, email, username, profileImage 
 
 	// draft values while editing
 	const [draftName, setDraftName] = useState(fullName);
+	const [draftEmail, setDraftEmail] = useState(email);
 	const [draftUsername, setDraftUsername] = useState(username);
 	const [draftImage, setDraftImage] = useState(profileImage ?? '');
 
 	const cancel = () => {
 		setDraftName(fullName);
+		setDraftEmail(email);
 		setDraftUsername(username);
 		setDraftImage(profileImage ?? '');
 		setEditing(null);
 	};
 
-	const save = (field: 'name' | 'username' | 'image', value: string) => {
+	const save = (field: 'name' | 'username' | 'email' | 'image', value: string) => {
 		startTransition(async () => {
 			await updateAccountField(field, value);
 			setEditing(null);
@@ -79,7 +81,7 @@ export function AccountSettingsClient({ fullName, email, username, profileImage 
 						{editing === 'name' ? (
 							<div className="flex gap-2">
 								<Button
-									variant="outline"
+									variant="mint"
 									size="sm"
 									disabled={isPending}
 									onClick={() => save('name', draftName)}
@@ -102,21 +104,41 @@ export function AccountSettingsClient({ fullName, email, username, profileImage 
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
 						<div>
-							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Email</h2>
-							<p className="break-all text-sm text-neutral-600">{email}</p>
+							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Name</h2>
+
+							{editing === 'email' ? (
+								<TextInput value={draftEmail} onChange={setDraftEmail} placeholder="Your email" />
+							) : (
+								<p className="text-sm text-neutral-600">{email}</p>
+							)}
 						</div>
 
-						{/* Keep this as a link to a dedicated page using <UserProfile /> */}
-						<Button variant="outline" size="sm" asChild>
-							<a href="/account/security">Change email</a>
-						</Button>
+						{editing === 'email' ? (
+							<div className="flex gap-2">
+								<Button
+									variant="mint"
+									size="sm"
+									disabled={isPending}
+									onClick={() => save('email', draftEmail)}
+								>
+									Save
+								</Button>
+								<Button variant="outline" size="sm" disabled={isPending} onClick={cancel}>
+									Cancel
+								</Button>
+							</div>
+						) : (
+							<Button variant="outline" size="sm" onClick={() => setEditing('email')}>
+								Change email
+							</Button>
+						)}
 					</div>
 				</section>
 
 				{/* USERNAME */}
 				<section className="rounded-xl border border-black/5 bg-[#fffdf9] p-4">
 					<div className="flex items-center justify-between gap-4">
-						<div>
+						<div className="min-w-0 flex-1">
 							<h2 className="mb-1 text-xl font-semibold text-neutral-800">Username</h2>
 
 							{editing === 'username' ? (
@@ -133,7 +155,7 @@ export function AccountSettingsClient({ fullName, email, username, profileImage 
 						{editing === 'username' ? (
 							<div className="flex gap-2">
 								<Button
-									variant="outline"
+									variant="mint"
 									size="sm"
 									disabled={isPending}
 									onClick={() => save('username', draftUsername)}

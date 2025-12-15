@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import db from '@/db/drizzle';
 import { users, userProgress } from '@/db/schema';
 
-type Field = 'name' | 'username' | 'image';
+type Field = 'name' | 'username' | 'email' | 'image';
 
 export async function updateAccountField(field: Field, value: string) {
 	const { userId } = await auth();
@@ -16,31 +16,35 @@ export async function updateAccountField(field: Field, value: string) {
 	const trimmed = value.trim();
 
 	if (field === 'name') {
-		// upsert into users
-		await db
-			.insert(users)
-			.values({ userId, displayName: trimmed })
-			.onConflictDoUpdate({
-				target: users.userId,
-				set: { displayName: trimmed }
-			});
+        await db
+            .insert(users)
+            .values({ userId, displayName: trimmed, updatedAt: new Date() })
+            .onConflictDoUpdate({
+            target: users.userId,
+            set: { displayName: trimmed, updatedAt: new Date() }
+            });
+    }
 
-		// keep user_progress in sync (what you likely show in-app)
-		await db
-			.update(userProgress)
-			.set({ userName: trimmed, updatedAt: new Date() })
-			.where(eq(userProgress.userId, userId));
-	}
+    if (field === 'username') {
+        await db
+            .insert(users)
+            .values({ userId, username: trimmed, updatedAt: new Date() })
+            .onConflictDoUpdate({
+            target: users.userId,
+            set: { username: trimmed, updatedAt: new Date() }
+            });
+    }
 
-	if (field === 'username') {
-		await db
-			.insert(users)
-			.values({ userId, username: trimmed })
-			.onConflictDoUpdate({
-				target: users.userId,
-				set: { username: trimmed }
-			});
-	}
+    if (field === 'email') {
+        await db
+            .insert(users)
+            .values({ userId, email: trimmed, updatedAt: new Date() })
+            .onConflictDoUpdate({
+            target: users.userId,
+            set: { email: trimmed, updatedAt: new Date() }
+            });
+    }
+
 
 	if (field === 'image') {
 		// NOTE: this assumes you're storing an image URL/path in your DB

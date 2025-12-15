@@ -31,7 +31,10 @@ export const users = pgTable("users", {
     userId: text("user_id").primaryKey(),
     username: text("username"),
     displayName: text("display_name"),
+    email: text("email"),
+    emailVerified: boolean("email_verified").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const courses = pgTable("courses", {
