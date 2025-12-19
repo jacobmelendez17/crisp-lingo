@@ -5,6 +5,7 @@ import { ActivityCard } from '../components/activity-card';
 import { LevelProgressCard } from '../components/level-progress-card';
 import { ProgressCard } from '../components/progress-card';
 import { UserProgressCard } from '../components/user-progress-card';
+import { QuickPracticeCard } from '../components/quick-practice-card';
 
 export default async function DashboardPage() {
 	return (
@@ -24,6 +25,21 @@ export default async function DashboardPage() {
 				</aside>
 				<div className="col-span-full lg:col-[1/-1]">
 					<ProgressCard />
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						<QuickPracticeCard />
+
+						<QuickPracticeCard
+							title="Random Vocabulary"
+							description="Practice a surprise set of vocab."
+							href="/practice/random?vocab"
+						/>
+
+						<QuickPracticeCard
+							title="Random Grammar"
+							description="Test yourself on grammar patterns."
+							href="/practice/random?grammar"
+						/>
+					</div>
 				</div>
 			</div>
 		</main>
