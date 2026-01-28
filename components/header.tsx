@@ -8,12 +8,15 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/profile-dropdown';
 import { Input } from '@/components/ui/input';
+import { Search, X } from 'lucide-react';
 
 import { useEffect, useRef, useState } from 'react';
 
 export const Header = () => {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
+	const [searchOpen, setSearchOpen] = useState(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
 	const menuRef = useRef<HTMLDivElement | null>(null);
 	const [query, setQuery] = useState('');
 
@@ -23,7 +26,10 @@ export const Header = () => {
 			if (!menuRef.current.contains(e.target as Node)) setOpen(false);
 		};
 		const onEsc = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') setOpen(false);
+			if (e.key === 'Escape') {
+				setOpen(false);
+				setSearchOpen(false);
+			}
 		};
 		document.addEventListener('mousedown', onDocClick);
 		document.addEventListener('keydown', onEsc);
@@ -32,6 +38,12 @@ export const Header = () => {
 			document.removeEventListener('keydown', onEsc);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (searchOpen) {
+			requestAnimationFrame(() => inputRef.current?.focus());
+		}
+	})
 
 	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -83,15 +95,52 @@ export const Header = () => {
 						})}
 					</ul>
 
-					<form onSubmit={handleSearch} className="relative ml-6">
-						<Input
-							type="text"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search..."
-							className="w-48 rounded-xl border-2 border-white/70 bg-white/90 px-4 py-2 text-lg text-neutral-800 transition placeholder:text-neutral-500 focus:border-white focus:ring-2 focus:ring-white/50 lg:w-64"
-						/>
+					<form
+						onSubmit={handleSearch}
+						className="relative ml-6 flex items-center"
+						role="search"
+						>
+						<div
+							className={cn(
+							'overflow-hidden transition-all duration-200 ease-out',
+							searchOpen ? 'w-48 opacity-100 lg:w-48' : 'w-0 opacity-0'
+							)}
+							aria-hidden={!searchOpen}
+						>
+							<Input
+								ref={inputRef}
+								type="text"
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								placeholder="Search..."
+								className={cn(
+									'rounded-xl border-2 border-white/70 bg-white/90 px-4 py-2 text-lg text-neutral-800 placeholder:text-neutral-500',
+									'focus:border-white focus:ring-2 focus:ring-white/50'
+								)}
+								tabIndex={searchOpen ? 0 : -1}
+							/>
+						</div>
+
+						<button
+							type="button"
+							onClick={() => {
+							if (searchOpen) {
+								setSearchOpen(false);
+								setQuery('');
+							} else {
+								setSearchOpen(true);
+							}
+							}}
+							className={cn(
+							'ml-2 inline-flex h-10 w-10 items-center justify-center rounded-xl',
+							'bg-white/70 text-neutral-800 shadow-sm transition hover:bg-white'
+							)}
+							aria-label={searchOpen ? 'Close search' : 'Open search'}
+						>
+							{searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+						</button>
 					</form>
+
 
 					<ProfileDropdown
 						className="ml-4"
