@@ -34,9 +34,10 @@ type VocabExampleSeed = {
 
 
 const VOCAB: VocabSeed[] = [
-  { word: "uno", translation: "one", 
+  {
+    word: "uno", translation: "one",
     imageUrl: "/starter-icons/one.svg",
-    meaning: `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something.(insert example: "Solo me queda un problema en el examen. Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`, 
+    meaning: `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something.(insert example: "Solo me queda un problema en el examen. Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`,
     mnemonic: `This is just like the card game "Uno". When you have one card left you scream "UNO!"`,
     partOfSpeech: "numeral",
     pronunciation: "oo-noh",
@@ -68,7 +69,7 @@ const VOCAB: VocabSeed[] = [
         translation: "One must think carefully before making an important decision.",
         audioUrl: "/audio/uno_m",
       },
-    ] ,
+    ],
   },
   { word: "dos", translation: "two", meaning: "numeral: two, 2", level: 1 },
   { word: "tres", translation: "three", meaning: "numeral: three, 3", level: 1 },
@@ -79,6 +80,7 @@ const VOCAB: VocabSeed[] = [
   { word: "ocho", translation: "eight", meaning: "numeral: eight, 8", level: 1 },
   { word: "nueve", translation: "nine", meaning: "numeral: nine, 9", level: 1 },
   { word: "diez", translation: "ten", meaning: "numeral: ten, 10", level: 1 },
+  { word: "hablar", translation: "to speak", meaning: "verb to speak", level: 5 },
   { word: "el gato", translation: "cat", meaning: "small, domesticated feline often kept as a pet", level: 1 },
   { word: "el perro", translation: "dog", meaning: "domesticated animal known as a household pet or working companion", level: 1 },
 
@@ -152,7 +154,7 @@ const GRAMMAR: GrammarSeed[] = [
   { title: `"er" verb in "She/He" form (Present)`, structure: `él/ella: -e`, summary: `comer → él/ella come` },
   { title: `o`, structure: `X o Y`, summary: `conjunction “or”` },
   { title: `-o, -a Adjective Agreement`, structure: `adj -o/-a ↔ noun gender`, summary: `basic gender agreement (niño alto / niña alta)` },
-];	
+];
 
 const chunk = <T,>(arr: T[], size: number): T[][] => {
   const res: T[][] = [];
@@ -165,7 +167,7 @@ const main = async () => {
     console.log("Seeding database…");
 
     // 1) Clear in FK-safe order
-    try { await db.execute(dsql`TRUNCATE TABLE "user_vocab_srs" RESTART IDENTITY CASCADE`); } catch {}
+    try { await db.execute(dsql`TRUNCATE TABLE "user_vocab_srs" RESTART IDENTITY CASCADE`); } catch { }
     await db.execute(dsql`
       TRUNCATE TABLE
         "user_vocab_srs",
