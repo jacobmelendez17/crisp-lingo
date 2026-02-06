@@ -6,7 +6,6 @@ import {
   and,
   or,
   isNull,
-  count,
   lte,
   lt,
   sql,
@@ -25,8 +24,18 @@ import {
   vocab,
   levels,
   vocabExamples,
+  grammar
 } from "@/db/schema";
 
+const UNLOCK_SRS_LEVEL = 5;
+
+export type ConjugationRow = {
+  id: number;
+  title: string;
+  levelId: number;
+  srsLevel: number;
+  meta: any;
+};
 
 export const getUserProgress = async () => {
   const userId = await getActiveUserId();
@@ -176,11 +185,11 @@ export const getDueReviews = cache(async (limit?: number) => {
     .where(and(eq(userVocabSrs.userId, userId), lte(userVocabSrs.nextReviewAt, now)))
     .orderBy(asc(userVocabSrs.nextReviewAt));
 
-    if (typeof limit === 'number') {
-      return base.limit(limit);
-    }
+  if (typeof limit === 'number') {
+    return base.limit(limit);
+  }
 
-    return base;
+  return base;
 });
 
 export const countDueReviews = cache(async () => {
@@ -422,7 +431,7 @@ export const getVocabExamples = cache(async (vocabId: number) => {
     .where(eq(vocabExamples.vocabId, vocabId))
     .orderBy(asc(vocabExamples));
 
-    return rows;
+  return rows;
 })
 
 export const getYearlyActivity = cache(async () => {
@@ -544,3 +553,27 @@ export const getYearlyActivity = cache(async () => {
 
   return days;
 });
+
+export async function getUnlockedConjugations(userId: string) {
+  const kindIsConjugation = sql`(${grammar.meta} ->> 'kind') = 'conjugation'`;
+
+  const rows = await db
+    .select({
+      id: grammar.id,
+      title: grammar.title,
+      levelId: grammar.levelId,
+      srsLevel: userGrammarSrs.srsLevel,
+      meta: grammar.meta,
+    })
+    .from(userGrammarSrs)
+    .innerJoin(grammar, eq(userGrammarSrs.grammarId, grammar.id))
+    .where(
+      and(
+        eq(userGrammarSrs.userId, userId),
+        gte(userGrammarSrs.srsLevel, UNLOCK_SRS_LEVEL),
+        kindIsConjugation
+      )
+    );
+
+  return rows as ConjugationRow[];
+}

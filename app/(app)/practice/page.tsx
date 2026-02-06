@@ -40,7 +40,7 @@ const FAVORITES_KEY = 'crispLingo.practiceFavorites.v1';
 const GAMES: PracticeGame[] = [
 	{
 		title: 'Verb Conjugations',
-		href: '/practice/conjugations',
+		href: '/practice/exercises/conjugations',
 		desc: 'Present, past, and future drills',
 		icon: <BookOpen className="size-8" />,
 		minutes: 8,
