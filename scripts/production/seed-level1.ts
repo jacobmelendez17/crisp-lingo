@@ -16,6 +16,21 @@ type VocabSeed = {
     meaning: string;
 };
 
+function slugifyForImageFromEnglish(translation: string) {
+    return translation
+        .toLowerCase()
+        .trim()
+        .replace(/^to\s+/i, "")          // "to be" -> "be", "to have" -> "have"
+        .replace(/[()'"]/g, "")          // remove punctuation
+        .replace(/[^a-z0-9\s-]/g, "")    // keep a-z, 0-9, spaces, hyphens
+        .replace(/\s+/g, "-");           // spaces -> dashes
+}
+
+function getLevel1ImageUrlFromTranslation(translation: string) {
+    const slug = slugifyForImageFromEnglish(translation);
+    return `/level1/${slug}.svg`;
+}
+
 const VOCAB_LEVEL_1: VocabSeed[] = [
     { word: "uno", translation: "one", pronunciation: "oo-noh", ipa: "/'uno/", partOfSpeech: "numeral", meaning: "numeral: one, 1" },
     { word: "dos", translation: "two", pronunciation: "dohs", ipa: "/dos/", partOfSpeech: "numeral", meaning: "numeral: two, 2" },
@@ -141,7 +156,7 @@ async function main() {
             mnemonic: null,
             synonyms: null,
             variants: null,
-            imageUrl: null,
+            imageUrl: getLevel1ImageUrlFromTranslation(v.translation),
             audioUrl: null,
             levelId: lvl.id,
             position: idx + 1,
