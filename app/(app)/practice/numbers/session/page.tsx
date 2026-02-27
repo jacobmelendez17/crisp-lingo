@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { CardShell } from '@/components/card-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ type Dir = 'es2num' | 'num2es';
 
 type Question = {
 	prompt: string;
-	answerText: string; // what we show as “correct answer”
+	answerText: string;
 	accept: (raw: string) => boolean;
 };
 
@@ -25,7 +25,7 @@ function normalizeText(s: string) {
 		.trim()
 		.toLowerCase()
 		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '') // remove accents
+		.replace(/[\u0300-\u036f]/g, '')
 		.replace(/[.,]/g, '')
 		.replace(/\s+/g, ' ');
 }
@@ -114,24 +114,17 @@ function toSpanish(n: number): string {
 		return rest === 0 ? th : `${th} ${toSpanish(rest)}`;
 	}
 	if (n === 1000000) return 'un millon';
-	// simple extension
 	const millions = Math.floor(n / 1000000);
 	const rest = n % 1000000;
 	const m = millions === 1 ? 'un millon' : `${toSpanish(millions)} millones`;
 	return rest === 0 ? m : `${m} ${toSpanish(rest)}`;
 }
 
-/**
- * Parses Spanish number words into a number.
- * Supports: 0..millions (basic), ignoring fillers like "y", currency words, etc.
- */
 function parseSpanishNumber(input: string): number | null {
 	const s = normalizeText(input);
 
-	// allow plain numerals
 	if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
 
-	// ignore currency words if present
 	const cleaned = s
 		.replace(/\b(dolar(es)?|centavo(s)?|peso(s)?|usd)\b/g, '')
 		.replace(/\s+/g, ' ')
@@ -139,7 +132,6 @@ function parseSpanishNumber(input: string): number | null {
 
 	if (!cleaned) return null;
 
-	// handle single-token specials (veintiuno, dieciseis, etc.)
 	if (Object.values(SPECIALS).includes(cleaned)) {
 		const found = Object.entries(SPECIALS).find(([, v]) => v === cleaned);
 		return found ? Number(found[0]) : null;
@@ -201,12 +193,6 @@ function parseSpanishNumber(input: string): number | null {
 	let total = 0;
 	let current = 0;
 
-	function flushCurrent(mult: number) {
-		if (current === 0) current = 1;
-		total += current * mult;
-		current = 0;
-	}
-
 	for (const t of tokens) {
 		if (t === 'mil') {
 			if (current === 0) current = 1;
@@ -220,11 +206,8 @@ function parseSpanishNumber(input: string): number | null {
 			current = 0;
 			continue;
 		}
-
 		const v = wordToValue[t];
 		if (v == null) return null;
-
-		// hundreds act like additive here (e.g., "doscientos" + rest)
 		current += v;
 	}
 
@@ -265,11 +248,9 @@ function makeQuestion(mode: Mode, dir: Dir): Question {
 	}
 
 	if (mode === 'money') {
-		// $x.yy where x 1..99, cents 0..99
 		const dollars = randomInt(1, 99);
 		const cents = randomInt(0, 99);
 		const numeric = `${dollars}.${String(cents).padStart(2, '0')}`;
-
 		const spanish = `${toSpanish(dollars)} dolares con ${toSpanish(cents)} centavos`;
 
 		const prompt = dir === 'es2num' ? spanish : `$${numeric}`;
@@ -283,12 +264,6 @@ function makeQuestion(mode: Mode, dir: Dir): Question {
 					const s = normalizeText(raw).replace('$', '');
 					return s === normalizeText(numeric);
 				}
-				const got = normalizeText(raw);
-				// be a bit forgiving: accept if numeric parses back correctly
-				// (we ignore “dolares/centavos” in parser)
-				const dollarsGot = parseSpanishNumber(got);
-				// if they typed the full phrase, parser returns dollars + cents (wrong),
-				// so for MVP: compare normalized string against expected phrase.
 				return normalizeText(raw) === normalizeText(spanish);
 			}
 		};
@@ -329,7 +304,6 @@ function makeBatch(mode: Mode, dir: Dir, count: number): Question[] {
 
 export default function NumbersPracticeSessionPage() {
 	const sp = useSearchParams();
-	const router = useRouter();
 
 	const mode = (sp.get('mode') as Mode) ?? 'range99';
 	const dir = (sp.get('dir') as Dir) ?? 'es2num';
@@ -338,7 +312,6 @@ export default function NumbersPracticeSessionPage() {
 	const [batch, setBatch] = useState<Question[]>([]);
 	const [i, setI] = useState(0);
 	const [value, setValue] = useState('');
-	const [correct, setCorrect] = useState(0);
 	const [status, setStatus] = useState<'idle' | 'right' | 'wrong'>('idle');
 	const [showAnswer, setShowAnswer] = useState<string | null>(null);
 
@@ -346,13 +319,11 @@ export default function NumbersPracticeSessionPage() {
 		setBatch(makeBatch(mode, dir, count));
 		setI(0);
 		setValue('');
-		setCorrect(0);
 		setStatus('idle');
 		setShowAnswer(null);
 	}, [mode, dir, count]);
 
 	const q = batch[i];
-
 	const done = batch.length > 0 && i >= batch.length;
 
 	const submit = () => {
@@ -360,7 +331,6 @@ export default function NumbersPracticeSessionPage() {
 		const ok = q.accept(value);
 		setStatus(ok ? 'right' : 'wrong');
 		setShowAnswer(ok ? null : q.answerText);
-		if (ok) setCorrect((c) => c + 1);
 	};
 
 	const next = () => {
@@ -373,18 +343,14 @@ export default function NumbersPracticeSessionPage() {
 	if (done) {
 		return (
 			<main className="min-h-[calc(100vh-80px)] bg-[#fde7e1]">
-				<div className="mx-auto w-full max-w-[800px] px-4 py-10 lg:px-6">
-					<CardShell title="Session complete" className="bg-white">
-						<p className="text-neutral-700">
-							Score: <span className="font-semibold">{correct}</span> / {batch.length}
-						</p>
-						<div className="mt-6 flex flex-wrap gap-3">
+				<div className="mx-auto w-full max-w-[720px] px-4 py-10 lg:px-6">
+					<CardShell title="Done" className="bg-white">
+						<div className="mt-4 flex flex-wrap gap-3">
 							<Button
 								onClick={() => {
 									setBatch(makeBatch(mode, dir, count));
 									setI(0);
 									setValue('');
-									setCorrect(0);
 									setStatus('idle');
 									setShowAnswer(null);
 								}}
@@ -397,13 +363,6 @@ export default function NumbersPracticeSessionPage() {
 									Back to setup
 								</Button>
 							</Link>
-							<Button
-								variant="outline"
-								className="rounded-2xl"
-								onClick={() => router.push('/practice')}
-							>
-								Back to Practice
-							</Button>
 						</div>
 					</CardShell>
 				</div>
@@ -413,41 +372,35 @@ export default function NumbersPracticeSessionPage() {
 
 	return (
 		<main className="min-h-[calc(100vh-80px)] bg-[#fde7e1]">
-			<div className="mx-auto w-full max-w-[800px] px-4 py-10 lg:px-6">
+			<div className="mx-auto w-full max-w-[720px] px-4 py-10 lg:px-6">
 				<div className="mb-6 flex items-center justify-between">
-					<Link href="/practice/numbers" className="text-sm font-medium text-neutral-700 underline">
+					<Link
+						href="/practice/numbers"
+						className="text-sm font-medium text-neutral-700 underline"
+					>
 						← Setup
 					</Link>
+
 					<div className="text-sm text-neutral-700">
 						<span className="font-semibold">{i + 1}</span> / {batch.length}
 					</div>
 				</div>
 
-				<CardShell
-					title={
-						mode === 'range99'
-							? '1–99'
-							: mode === 'range1000'
-								? '100–1000'
-								: mode === 'big'
-									? 'Big numbers'
-									: mode === 'money'
-										? 'Money'
-										: 'Math'
-					}
-					className="bg-white"
-				>
-					<div className="space-y-5">
-						<div className="rounded-2xl bg-neutral-50 p-5">
+				<CardShell title="" className="bg-white">
+					<div className="flex min-h-[360px] flex-col items-center justify-center gap-6 py-6">
+						{/* Prompt centered */}
+						<div className="text-center">
 							<div className="text-xs font-semibold text-neutral-500">
 								{dir === 'es2num' ? 'Type the number' : 'Type it in Spanish'}
 							</div>
-							<div className="mt-2 text-3xl font-extrabold tracking-wide text-neutral-900">
+
+							<div className="mt-3 text-4xl font-extrabold tracking-wide text-neutral-900">
 								{q?.prompt ?? '...'}
 							</div>
 						</div>
 
-						<div className="flex flex-col gap-3 sm:flex-row">
+						{/* Answer box */}
+						<div className="w-full max-w-md space-y-3">
 							<input
 								value={value}
 								onChange={(e) => setValue(e.target.value)}
@@ -460,26 +413,34 @@ export default function NumbersPracticeSessionPage() {
 								placeholder={dir === 'es2num' ? 'e.g. 32' : 'e.g. treinta y dos'}
 								className={cn(
 									'w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base outline-none',
+									'text-center',
 									'focus:ring-4 focus:ring-[var(--leaf)]/30'
 								)}
 								autoFocus
 							/>
 
 							{status === 'idle' ? (
-								<Button onClick={submit} className="rounded-2xl px-6 py-6 text-base">
+								<Button
+									onClick={submit}
+									className="w-full rounded-2xl py-6 text-base"
+								>
 									Check
 								</Button>
 							) : (
-								<Button onClick={next} className="rounded-2xl px-6 py-6 text-base">
+								<Button
+									onClick={next}
+									className="w-full rounded-2xl py-6 text-base"
+								>
 									Next
 								</Button>
 							)}
 						</div>
 
+						{/* Feedback */}
 						{status !== 'idle' && (
 							<div
 								className={cn(
-									'rounded-2xl border p-4 text-sm',
+									'w-full max-w-md rounded-2xl border p-4 text-center text-sm',
 									status === 'right'
 										? 'border-emerald-200 bg-emerald-50 text-emerald-900'
 										: 'border-rose-200 bg-rose-50 text-rose-900'
@@ -500,15 +461,6 @@ export default function NumbersPracticeSessionPage() {
 								)}
 							</div>
 						)}
-
-						<div className="flex items-center justify-between text-xs text-neutral-500">
-							<div>
-								Correct: <span className="font-semibold text-neutral-800">{correct}</span>
-							</div>
-							<div className="text-right">
-								Batch size: <span className="font-semibold text-neutral-800">{batch.length}</span>
-							</div>
-						</div>
 					</div>
 				</CardShell>
 			</div>
