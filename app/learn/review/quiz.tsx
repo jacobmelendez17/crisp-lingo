@@ -35,8 +35,19 @@ function normalize(s: string) {
 
 type Status = 'none' | 'correct' | 'wrong';
 
+// what kind of prompt we’re showing
+type PromptMode = 'esToEn' | 'enToEs' | 'imageToEs' | 'clozeEs';
+
+type Prompt = {
+	key: string; // unique per prompt (vocabId + mode)
+	itemIndex: number;
+	mode: PromptMode;
+};
+
 type ResultRow = {
-	id: number;
+	promptKey: string;
+	vocabId: number;
+	mode: PromptMode;
 	word: string;
 	expected: string;
 	userAnswer: string;
@@ -46,142 +57,169 @@ type ResultRow = {
 	imageUrl?: string | null;
 };
 
-// 🆕 what kind of prompt we’re showing
-type PromptMode = 'esToEn' | 'imageToEs' | 'clozeEs';
-
 export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	const router = useRouter();
 
-	// progress setup
+	// Build 2 prompts per vocab item:
+	//  1) Spanish -> English (type English)
+	//  2) Spanish production (type Spanish) -> enToEs/imageToEs/clozeEs
+	const prompts: Prompt[] = useMemo(() => {
+		const out: Prompt[] = [];
+
+		for (let i = 0; i < items.length; i++) {
+			const it = items[i];
+
+			// Prompt 1: always Spanish -> English
+			out.push({
+				key: `${it.id}:esToEn`,
+				itemIndex: i,
+				mode: 'esToEn'
+			});
+
+			// Prompt 2: Spanish production
+			let second: PromptMode = 'enToEs';
+
+			if (sessionType === 'review') {
+				const level = it.srsLevel ?? 1;
+				if (level === 2 && it.imageUrl) second = 'imageToEs';
+				else if (level >= 3 && it.example) second = 'clozeEs';
+				else second = 'enToEs';
+			} else {
+				// lesson: always require typing Spanish too
+				second = 'enToEs';
+			}
+
+			out.push({
+				key: `${it.id}:${second}`,
+				itemIndex: i,
+				mode: second
+			});
+		}
+
+		return out;
+	}, [items, sessionType]);
+
+	// progress setup (now based on number of prompts, not number of items)
 	const [progress, setProgress] = useState(initialPercentage === 100 ? 0 : initialPercentage);
+	const total = prompts.length;
+
 	const step = useMemo(() => {
 		const base = initialPercentage === 100 ? 0 : initialPercentage;
 		const remaining = Math.max(0, 100 - base);
-		return items.length > 0 ? remaining / items.length : 0;
-	}, [items.length, initialPercentage]);
+		return total > 0 ? remaining / total : 0;
+	}, [total, initialPercentage]);
 
-	// queue for retry logic
-	const [queue, setQueue] = useState<number[]>(() => items.map((_, i) => i));
+	// queue for retry logic (now prompt indices)
+	const [queue, setQueue] = useState<number[]>(() => prompts.map((_, i) => i));
 	const [cursor, setCursor] = useState(0);
 
-	// per-item state
-	const [awarded, setAwarded] = useState<Record<number, boolean>>({});
-	const [attempts, setAttempts] = useState<Record<number, number>>({});
-	const [firstTry, setFirstTry] = useState<Record<number, boolean>>({});
+	// per-prompt state (keyed by prompt key, not vocab id)
+	const [awarded, setAwarded] = useState<Record<string, boolean>>({});
+	const [attempts, setAttempts] = useState<Record<string, number>>({});
+	const [firstTry, setFirstTry] = useState<Record<string, boolean>>({});
 
 	// UI state
 	const [input, setInput] = useState('');
 	const [status, setStatus] = useState<Status>('none');
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	// summary rows
+	// summary rows (one per prompt)
 	const [rows, setRows] = useState<ResultRow[]>([]);
 
-	const done = cursor >= queue.length;
-	const currentIndex = queue[cursor];
-	const current = items[currentIndex];
+	// Reset state when prompts change (new session / new items)
+	useEffect(() => {
+		setQueue(prompts.map((_, i) => i));
+		setCursor(0);
+		setAwarded({});
+		setAttempts({});
+		setFirstTry({});
+		setRows([]);
+		setInput('');
+		setStatus('none');
+		setProgress(initialPercentage === 100 ? 0 : initialPercentage);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [prompts.length]);
 
-	const total = items.length;
+	const done = cursor >= queue.length;
+
+	const currentPromptIndex = queue[cursor];
+	const currentPrompt = prompts[currentPromptIndex];
+
+	const currentIndex = currentPrompt?.itemIndex;
+	const current = currentIndex !== undefined ? items[currentIndex] : undefined;
+
 	const correct = rows.filter((r) => r.correct).length;
-	const firstTryCorrect = rows.filter((r) => r.firstTryCorrect).length;
-	const correctForLesson = sessionType === 'review' ? firstTryCorrect : correct;
+	const firstTryCorrectCount = rows.filter((r) => r.firstTryCorrect).length;
+
+	// This is what the header shows as "correct"
+	const correctForHeader = sessionType === 'review' ? firstTryCorrectCount : correct;
+
 	const remaining = Math.max(0, total - correct);
 
 	const startTimeRef = useRef<number>(Date.now());
 
-	// 🆕 decide what kind of prompt to show for the current item
-	const promptMode: PromptMode = useMemo(() => {
-		if (!current) return 'esToEn';
+	const promptMode: PromptMode = currentPrompt?.mode ?? 'esToEn';
 
-		// Lessons always Spanish -> English
-		if (sessionType === 'lesson') return 'esToEn';
-
-		const level = current.srsLevel ?? 1;
-
-		if (level <= 1) {
-			// first review → Spanish -> English
-			return 'esToEn';
-		}
-
-		if (level === 2 && current.imageUrl) {
-			// second stage → Image -> Spanish
-			return 'imageToEs';
-		}
-
-		if (level >= 3 && current.example) {
-			// later stages → Cloze sentence -> Spanish
-			return 'clozeEs';
-		}
-
-		// fallback
-		return 'esToEn';
-	}, [current, sessionType]);
-
-	// 🆕 build cloze sentence for SRS 3+
+	// Build cloze sentence for clozeEs
 	const clozeSentence = useMemo(() => {
 		if (!current?.example) return null;
 		const re = new RegExp(`\\b${current.word}\\b`, 'gi');
-		const replaced = current.example.replace(re, '____');
-		return replaced;
+		return current.example.replace(re, '____');
 	}, [current]);
 
-	// 🆕 acceptable answers now depend on promptMode
+	// Acceptable answers depend on promptMode
 	const acceptableAnswers = useMemo(() => {
 		if (!current) return [];
 
 		if (promptMode === 'esToEn') {
-			// Spanish → English: accept any of the translation variants
+			// Spanish -> English: accept any translation variants
 			return current.translation
 				.split(/[/;,]| or /i)
 				.map((s) => normalize(s))
 				.filter(Boolean);
 		}
 
-		// imageToEs or clozeEs → expect Spanish word
+		// enToEs / imageToEs / clozeEs expect the Spanish word
 		return [normalize(current.word)];
 	}, [current, promptMode]);
 
 	const onCheck = () => {
-		if (!current || status !== 'none') return;
+		if (!current || !currentPrompt || status !== 'none') return;
 
 		const guessRaw = input;
 		const guess = normalize(guessRaw);
 		const isCorrect = acceptableAnswers.includes(guess);
 
+		const k = currentPrompt.key;
+
 		setAttempts((prev) => ({
 			...prev,
-			[current.id]: (prev[current.id] ?? 0) + 1
+			[k]: (prev[k] ?? 0) + 1
 		}));
 
-		// Only record first-try for review sessions
-		if (sessionType === 'review') {
-			setFirstTry((prev) =>
-				prev[current.id] !== undefined ? prev : { ...prev, [current.id]: isCorrect }
-			);
-		}
+		// record first try per prompt
+		setFirstTry((prev) => (prev[k] !== undefined ? prev : { ...prev, [k]: isCorrect }));
 
 		setRows((prev) => {
-			const existing = prev.find((r) => r.id === current.id);
-			const filtered = prev.filter((r) => r.id !== current.id);
+			const existing = prev.find((r) => r.promptKey === k);
+			const filtered = prev.filter((r) => r.promptKey !== k);
 
-			const firstTryCorrectValue =
-				sessionType === 'review'
-					? (existing?.firstTryCorrect ?? isCorrect) // review: keep first-try truth
-					: false; // lesson: ignore first-try entirely
+			const firstTryCorrectValue = existing?.firstTryCorrect ?? isCorrect;
 
-			// 🆕 what we consider the “expected” string, to show on wrong answers
 			const expected = promptMode === 'esToEn' ? current.translation : current.word;
 
 			return [
 				...filtered,
 				{
-					id: current.id,
+					promptKey: k,
+					vocabId: current.id,
+					mode: promptMode,
 					word: current.word,
 					expected,
 					userAnswer: guessRaw,
 					correct: isCorrect,
 					firstTryCorrect: firstTryCorrectValue,
-					attempts: (attempts[current.id] ?? 0) + 1,
+					attempts: (attempts[k] ?? 0) + 1,
 					imageUrl: current.imageUrl ?? null
 				}
 			];
@@ -190,9 +228,9 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		if (isCorrect) {
 			setStatus('correct');
 
-			if (!awarded[current.id]) {
+			if (!awarded[k]) {
 				setProgress((p) => Math.min(100, p + step));
-				setAwarded((prev) => ({ ...prev, [current.id]: true }));
+				setAwarded((prev) => ({ ...prev, [k]: true }));
 			}
 		} else {
 			setStatus('wrong');
@@ -200,13 +238,13 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	};
 
 	const goNext = () => {
-		if (!current) return;
+		if (!current || !currentPrompt) return;
 
-		// reinsert wrong answers later in queue
+		// reinsert wrong prompts later in queue
 		if (status === 'wrong') {
 			const copy = [...queue];
 			const insertPos = Math.min(cursor + 2, copy.length);
-			copy.splice(insertPos, 0, currentIndex);
+			copy.splice(insertPos, 0, currentPromptIndex);
 			setQueue(copy);
 		}
 
@@ -219,9 +257,33 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 	useEffect(() => {
 		if (!done) return;
 
-		const correctIds = rows.filter((r) => r.correct).map((r) => r.id);
-		const upIds = rows.filter((r) => r.firstTryCorrect).map((r) => r.id);
-		const downIds = rows.filter((r) => !r.firstTryCorrect).map((r) => r.id);
+		// group prompt results by vocabId
+		const byVocab = new Map<number, ResultRow[]>();
+		for (const r of rows) {
+			const arr = byVocab.get(r.vocabId) ?? [];
+			arr.push(r);
+			byVocab.set(r.vocabId, arr);
+		}
+
+		// A vocab is "passed" only if both prompts ended correct
+		const passedVocabIds: number[] = [];
+
+		// In review: move up only if both prompts were first-try correct
+		const upIds: number[] = [];
+		const downIds: number[] = [];
+
+		for (const it of items) {
+			const rs = byVocab.get(it.id) ?? [];
+			const allCorrect = rs.length >= 2 && rs.every((x) => x.correct);
+			const allFirstTry = rs.length >= 2 && rs.every((x) => x.firstTryCorrect);
+
+			if (allCorrect) passedVocabIds.push(it.id);
+
+			if (sessionType === 'review') {
+				if (allFirstTry) upIds.push(it.id);
+				else downIds.push(it.id);
+			}
+		}
 
 		const elapsedMs = Date.now() - startTimeRef.current;
 		const duration = Math.round(elapsedMs / 1000);
@@ -229,8 +291,8 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		(async () => {
 			try {
 				if (sessionType === 'lesson') {
-					if (correctIds.length) {
-						await setSrsToOne({ vocabIds: correctIds });
+					if (passedVocabIds.length) {
+						await setSrsToOne({ vocabIds: passedVocabIds });
 					}
 				} else {
 					if (upIds.length || downIds.length) {
@@ -242,9 +304,9 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 			}
 
 			const summary = {
-				total,
-				correct: firstTryCorrect,
-				firstTryCorrect,
+				total, // prompts.length
+				correct: firstTryCorrectCount,
+				firstTryCorrect: firstTryCorrectCount,
 				progressEnd: progress,
 				rows,
 				duration
@@ -258,7 +320,7 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 
 			router.replace('/learn/summary');
 		})();
-	}, [done, rows, progress, router, sessionType]);
+	}, [done, rows, progress, router, sessionType, items, total, firstTryCorrectCount]);
 
 	if (done) {
 		return (
@@ -266,7 +328,7 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 				<Header
 					percentage={progress}
 					total={total}
-					correct={correctForLesson}
+					correct={correctForHeader}
 					remaining={remaining}
 				/>
 				<main className="flex min-h-[calc(100vh-100px)] items-center justify-center p-6">
@@ -276,16 +338,19 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		);
 	}
 
-	if (!current) return null;
+	if (!current || !currentPrompt) return null;
 
 	const atLastScreen = cursor === queue.length - 1;
 
-	// 🆕 Build the prompt text based on mode
+	// Build the prompt text based on mode
 	let title = '';
 	let subtitle: string | null = null;
 
 	if (promptMode === 'esToEn') {
 		title = `Type the English meaning for: ${current.word}`;
+		subtitle = null;
+	} else if (promptMode === 'enToEs') {
+		title = `Type the Spanish word for: ${current.translation}`;
 		subtitle = null;
 	} else if (promptMode === 'imageToEs') {
 		title = 'Type this word in Spanish';
@@ -295,7 +360,7 @@ export function Quiz({ items, initialPercentage, sessionType }: Props) {
 		subtitle = clozeSentence ?? current.example ?? '';
 	}
 
-	// 🆕 what we display as the correct answer if user is wrong
+	// what we display as the correct answer if user is wrong
 	const correctAnswerDisplay = promptMode === 'esToEn' ? current.translation : current.word;
 
 	return (
