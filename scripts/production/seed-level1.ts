@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import { sql as dsql } from "drizzle-orm";
+import { sql as dsql, eq } from "drizzle-orm";
 import * as schema from "@/db/schema";
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -13,7 +13,21 @@ type VocabSeed = {
     pronunciation?: string | null;
     ipa?: string | null;
     partOfSpeech?: string | null;
+
     meaning: string;
+
+    // Optional “card” fields
+    example?: string | null;
+    exampleTranslation?: string | null;
+    mnemonic?: string | null;
+
+    // store as strings (easy), or string[] if your schema supports arrays
+    synonyms?: string | null;
+    variants?: string | null;
+
+    // extra metadata that might not be DB columns
+    castilian?: string | null;
+    tags?: string[] | null;
 };
 
 function slugifyForImageFromEnglish(translation: string) {
@@ -32,7 +46,33 @@ function getLevel1ImageUrlFromTranslation(translation: string) {
 }
 
 const VOCAB_LEVEL_1: VocabSeed[] = [
-    { word: "uno", translation: "one", pronunciation: "oo-noh", ipa: "/'uno/", partOfSpeech: "numeral", meaning: "numeral: one, 1" },
+    {
+        word: "uno",
+        translation: "one",
+        pronunciation: "oo-noh",
+        ipa: "/'uno/",
+        partOfSpeech: "numeral",
+        meaning:
+            `the word uno is a bit more than just representing the number one. Like in english, it is used as an indefinite adjective to describe something. (insert example: "Solo me queda un problema en el examen." Add another question but use question not problem) In the example above, uno is changed to un and for feminine nouns, it would be changed to una as we see in this level's vocabulary lesson. Uno can also be used in the case where a noun is not explicitly mentioned so "uno" acts as a replacement pronoun. "I only have one left". One more meaning to define afer that`,
+        example:
+            `Tengo uno
+            Uno está aquí
+            Solo necesito uno más
+            Me queda uno todavía
+            Uno debe pensar bien antes de tomar una decisión importante`,
+        exampleTranslation:
+            `I have one
+One is here
+I only need one more
+I still have one left
+One must think carefully before making an important decision.`,
+        mnemonic:
+            `This is just like the card game "Uno". When you have one card left you scream "UNO!"`,
+        synonyms: `alguien, alguno`,
+        variants: `una, unos, unas`,
+        castilian: `N/A`,
+        tags: ["number"],
+    },
     { word: "dos", translation: "two", pronunciation: "dohs", ipa: "/dos/", partOfSpeech: "numeral", meaning: "numeral: two, 2" },
     { word: "tres", translation: "three", pronunciation: "trehs", ipa: "/tres/", partOfSpeech: "numeral", meaning: "numeral: three, 3" },
     { word: "cuatro", translation: "four", pronunciation: "kwah-troh", ipa: "/'kwatro/", partOfSpeech: "numeral", meaning: "numeral: four, 4" },
@@ -151,16 +191,21 @@ async function main() {
             ipa: v.ipa ?? null,
             partOfSpeech: v.partOfSpeech ?? null,
             meaning: v.meaning,
-            example: null,
-            exampleTranslation: null,
-            mnemonic: null,
-            synonyms: null,
-            variants: null,
+
+            example: v.example ?? null,
+            exampleTranslation: v.exampleTranslation ?? null,
+            mnemonic: v.mnemonic ?? null,
+            synonyms: v.synonyms ?? null,
+            variants: v.variants ?? null,
+
             imageUrl: getLevel1ImageUrlFromTranslation(v.translation),
             audioUrl: null,
             levelId: lvl.id,
             position: idx + 1,
-            meta: {},
+            meta: {
+                castilian: v.castilian ?? null,
+                tags: v.tags ?? []
+            },
         }))
     );
 

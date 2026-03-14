@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import db from '@/db/drizzle';
-import { vocab, userVocabSrs, vocabExamples } from '@/db/schema';
+import { userVocabSrs } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import Image from 'next/image';
 import { ExampleSentenceCard } from './ExampleSentenceCard';
 import { getVocabByWord, getVocabExamples } from '@/db/queries';
+import { AudioPlayButton } from './AudioPlayButton';
 
 export const revalidate = 60;
 
@@ -15,13 +16,13 @@ export default async function VocabDetailPage({ params }: Props) {
 	const term = decodeURIComponent((await params).term);
 
 	const row = await getVocabByWord(term);
-
 	if (!row) return notFound();
+
+	const examples = await getVocabExamples(row.id);
 
 	let lastReviewedAt: Date | undefined;
 	let firstLearnedAt: Date | undefined;
-
-	const examples = await getVocabExamples(row.id);
+	let srsLevel: number | undefined;
 
 	const { userId } = await auth();
 	let nextReviewText = 'Not scheduled yet';
@@ -29,6 +30,7 @@ export default async function VocabDetailPage({ params }: Props) {
 	if (userId) {
 		const [srsRow] = await db
 			.select({
+				srsLevel: userVocabSrs.srsLevel,
 				nextReviewAt: userVocabSrs.nextReviewAt,
 				lastReviewedAt: userVocabSrs.lastReviewedAt,
 				firstLearnedAt: userVocabSrs.firstLearnedAt
@@ -36,6 +38,8 @@ export default async function VocabDetailPage({ params }: Props) {
 			.from(userVocabSrs)
 			.where(and(eq(userVocabSrs.userId, userId), eq(userVocabSrs.vocabId, row.id)))
 			.limit(1);
+
+		srsLevel = srsRow?.srsLevel ?? 0;
 
 		const nextReviewAt = srsRow?.nextReviewAt as Date | undefined;
 		lastReviewedAt = srsRow?.lastReviewedAt as Date | undefined;
@@ -49,14 +53,9 @@ export default async function VocabDetailPage({ params }: Props) {
 				nextReviewText = 'Available now';
 			} else {
 				const hours = Math.round(diffMs / (1000 * 60 * 60));
-
-				if (hours < 1) {
-					nextReviewText = 'In less than 1 hour';
-				} else if (hours === 1) {
-					nextReviewText = 'In about 1 hour';
-				} else {
-					nextReviewText = `In about ${hours} hours`;
-				}
+				if (hours < 1) nextReviewText = 'In less than 1 hour';
+				else if (hours === 1) nextReviewText = 'In about 1 hour';
+				else nextReviewText = `In about ${hours} hours`;
 			}
 		}
 	}
@@ -65,6 +64,7 @@ export default async function VocabDetailPage({ params }: Props) {
 
 	return (
 		<main className="mx-auto w-full max-w-[900px] px-4 py-10 lg:px-0">
+			{/* Header */}
 			<section className="text-center">
 				{row.imageUrl && (
 					<div className="mx-auto mb-4 flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -88,12 +88,14 @@ export default async function VocabDetailPage({ params }: Props) {
 						</span>
 						<p className="text-lg font-medium">{row.partOfSpeech ?? '—'}</p>
 					</div>
+
 					<div>
 						<span className="text-small font-semibold uppercase tracking-wide text-neutral-500">
 							Pronunciation
 						</span>
 						<p className="text-lg font-medium">{row.pronunciation ?? '—'}</p>
 					</div>
+
 					<div>
 						<span className="text-small font-semibold uppercase tracking-wide text-neutral-500">
 							IPA
@@ -103,10 +105,9 @@ export default async function VocabDetailPage({ params }: Props) {
 				</div>
 			</section>
 
-			{/* dashed separator */}
 			<div className="mt-8 border-t border-dashed border-black" />
 
-			{/* Meaning section */}
+			{/* Meaning */}
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Meaning</h2>
 
@@ -121,57 +122,94 @@ export default async function VocabDetailPage({ params }: Props) {
 					</div>
 				)}
 
-				{(row.example || row.exampleTranslation) && (
+				{row.variants && (
 					<div className="mt-5 rounded-2xl bg-[#fff9f5] p-5 shadow-sm">
-						<h3 className="text-lg font-semibold text-neutral-800">Example sentence</h3>
-						<p className="mt-2 text-lg text-neutral-900">{row.example ?? '-'}</p>
-						<p className="mt-2 text-sm text-neutral-600">{row.exampleTranslation ?? ''}</p>
+						<h3 className="text-lg font-semibold text-neutral-800">Variants</h3>
+						<p className="mt-2 text-base text-neutral-700">{row.variants}</p>
 					</div>
 				)}
 			</section>
 
 			<div className="mt-10 border-t border-dashed border-black" />
 
+			{/* Mnemonic */}
 			<section className="mt-8">
-				<h2 className="text-3xl font-semibold text-neutral-900">Reading</h2>
+				<h2 className="text-3xl font-semibold text-neutral-900">Mnemonic</h2>
 				<p className="mt-4 text-lg text-neutral-800">
-					{row.pronunciation ?? 'No pronunciation has been added yet.'}
+					{row.mnemonic ?? 'No mnemonic has been added for this word yet.'}
 				</p>
 			</section>
 
 			<div className="mt-10 border-t border-dashed border-black" />
 
+			{/* Reading */}
 			<section className="mt-8">
-				<ExampleSentenceCard
-					examples={examples.map((ex) => ({
-						id: ex.id,
-						sentence: ex.sentence,
-						translation: ex.translation ?? '',
-						audioUrl: ex.audioUrl ?? undefined
-					}))}
-				/>
+				<div className="flex items-center justify-between gap-3">
+					<h2 className="text-3xl font-semibold text-neutral-900">Reading</h2>
+
+					{row.audioUrl ? (
+						<AudioPlayButton src={row.audioUrl} label={`Play audio for ${row.word}`} />
+					) : null}
+				</div>
+
+				<div className="mt-4 rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
+					<p className="text-lg text-neutral-900">
+						<span className="font-semibold">Typed reading:</span>{' '}
+						{row.pronunciation ?? '—'}
+					</p>
+					<p className="mt-2 text-sm text-neutral-600">
+						<span className="font-semibold">IPA:</span> {ipa ?? '—'}
+					</p>
+				</div>
 			</section>
 
 			<div className="mt-10 border-t border-dashed border-black" />
 
+			{/* Example Sentences */}
+			<section className="mt-8">
+				<h2 className="text-3xl font-semibold text-neutral-900">Example Sentences</h2>
+
+				{examples.length ? (
+					<div className="mt-4">
+						<ExampleSentenceCard
+							examples={examples.map((ex) => ({
+								id: ex.id,
+								sentence: ex.sentence,
+								translation: ex.translation ?? '',
+								audioUrl: ex.audioUrl ?? undefined
+							}))}
+						/>
+					</div>
+				) : (
+					<p className="mt-4 text-lg text-neutral-800">
+						No example sentences have been added yet.
+					</p>
+				)}
+			</section>
+
+			<div className="mt-10 border-t border-dashed border-black" />
+
+			{/* Current Progress */}
 			<section className="mt-8">
 				<h2 className="text-3xl font-semibold text-neutral-900">Current Progress</h2>
-				<p className="mt-4 text-lg text-neutral-800">
-					{row.pronunciation ?? 'No pronunciation has been added yet.'}
-				</p>
+
+				<div className="mt-4 rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
+					<p className="text-lg text-neutral-900">
+						<span className="font-semibold">SRS Level:</span>{' '}
+						{userId ? (srsLevel ?? 0) : 'Sign in to track progress'}
+					</p>
+				</div>
 			</section>
 
 			<div className="mt-10 border-t border-dashed border-black" />
 
 			{/* Progress strip */}
 			<section className="mt-8 grid gap-4 sm:grid-cols-3">
-				{/* Next Review */}
 				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
 					<h2 className="text-xl font-semibold text-neutral-900">Next Review</h2>
 					<p className="mt-2 text-lg text-neutral-800">{nextReviewText}</p>
 				</div>
 
-				{/* Last Reviewed */}
 				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
 					<h2 className="text-xl font-semibold text-neutral-900">Last Reviewed</h2>
 					<p className="mt-2 text-lg text-neutral-800">
@@ -179,7 +217,6 @@ export default async function VocabDetailPage({ params }: Props) {
 					</p>
 				</div>
 
-				{/* Unlocked Date */}
 				<div className="rounded-2xl bg-[#f0f7ee] p-5 shadow-sm">
 					<h2 className="text-xl font-semibold text-neutral-900">Unlocked On</h2>
 					<p className="mt-2 text-lg text-neutral-800">
