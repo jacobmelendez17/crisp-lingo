@@ -50,7 +50,7 @@ const GAMES: PracticeGame[] = [
 		imageAlt: 'Microscope'
 	},
 	{
-		title: 'Number Practice',
+		title: 'Numbers',
 		href: '/practice/numbers',
 		desc: 'Listen & type or select the number',
 		icon: <Hash className="size-8" />,
@@ -72,8 +72,8 @@ const GAMES: PracticeGame[] = [
 		imageAlt: 'Headphones'
 	},
 	{
-		title: 'Grocery Store',
-		href: '/practice/speed',
+		title: 'Sentence Learning',
+		href: '/practice/sentences',
 		desc: 'Match words & meanings—fast!',
 		icon: <Zap className="size-8" />,
 		minutes: 3,
@@ -94,7 +94,7 @@ const GAMES: PracticeGame[] = [
 		imageAlt: 'Flash cards'
 	},
 	{
-		title: 'Hospital',
+		title: 'Conversations',
 		href: '/practice/pictures',
 		desc: 'Tap the image that fits the word',
 		icon: <ImageIcon className="size-8" />,
@@ -139,7 +139,7 @@ function PracticeTile({
 		<div
 			className={cn(
 				'relative h-full w-full overflow-hidden rounded-2xl border border-black/5 p-5 shadow-sm',
-				'transition-transform считает', // (removed; no-op)
+				'transition-transform duration-500 ease-out',
 				'transition-all duration-500 ease-out',
 				'hover:scale-[1.02] hover:shadow-md active:scale-[0.99]',
 				'grid grid-rows-[auto_1fr_auto] gap-4',

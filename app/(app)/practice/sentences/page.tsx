@@ -1,236 +1,226 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+	Blocks,
+	FilePenLine,
+	Languages,
+	Volume2,
+	CheckCircle2,
+	Sparkles
+} from 'lucide-react';
 
-type SentencePart = {
+type SentenceMode = {
 	id: string;
-	text: string;
-	translation: string;
-	pos: string;
+	title: string;
+	description: string;
+	href: string;
+	icon: React.ReactNode;
+	accent: string;
+	bg: string;
+	highlights: string[];
 };
 
-type SentenceItem = {
-	id: number;
-	spanish: string;
-	english: string;
-	parts: SentencePart[];
-};
-
-const SENTENCES: SentenceItem[] = [
+const MODES: SentenceMode[] = [
 	{
-		id: 1,
-		spanish: 'La niña lee un libro en la casa.',
-		english: 'The girl reads a book in the house.',
-		parts: [
-			{ id: '1', text: 'La niña', translation: 'the girl', pos: 'subject' },
-			{ id: '2', text: 'lee', translation: 'reads', pos: 'verb' },
-			{ id: '3', text: 'un libro', translation: 'a book', pos: 'direct object' },
-			{ id: '4', text: 'en la casa', translation: 'in the house', pos: 'prepositional phrase' }
-		]
+		id: 'builder',
+		title: 'Sentence Builder',
+		description:
+			'Build the sentence yourself from word blocks after seeing an English prompt or hearing Spanish audio.',
+		href: '/practice/sentences/builder',
+		icon: <Blocks className="size-6" />,
+		accent: 'text-emerald-700',
+		bg: 'bg-emerald-50',
+		highlights: ['Word blocks', 'English or audio prompt', 'Great for structure']
+	},
+	{
+		id: 'fill-blank',
+		title: 'Fill in the Blank',
+		description:
+			'Read the sentence and type the missing Spanish word to strengthen recall in context.',
+		href: '/practice/sentences/fill-blanks',
+		icon: <FilePenLine className="size-6" />,
+		accent: 'text-sky-700',
+		bg: 'bg-sky-50',
+		highlights: ['Context clues', 'Typing practice', 'Fast reps']
+	},
+	{
+		id: 'translate',
+		title: 'Type the Translation',
+		description:
+			'See a Spanish sentence and type the English meaning yourself.',
+		href: '/practice/sentences/translate',
+		icon: <Languages className="size-6" />,
+		accent: 'text-violet-700',
+		bg: 'bg-violet-50',
+		highlights: ['Full sentence meaning', 'Reading practice', 'Higher difficulty']
 	}
-];
-
-const TOKEN_COLORS = [
-	'bg-emerald-200/80 text-emerald-950 hover:bg-emerald-300/90',
-	'bg-sky-200/80 text-sky-950 hover:bg-sky-300/90',
-	'bg-amber-200/90 text-amber-950 hover:bg-amber-300/90',
-	'bg-rose-200/80 text-rose-950 hover:bg-rose-300/90',
-	'bg-violet-200/80 text-violet-950 hover:bg-violet-300/90',
-	'bg-teal-200/80 text-teal-950 hover:bg-teal-300/90',
-	'bg-orange-200/80 text-orange-950 hover:bg-orange-300/90',
-	'bg-fuchsia-200/80 text-fuchsia-950 hover:bg-fuchsia-300/90'
 ];
 
 export default function SentencePracticePage() {
-	const [index, setIndex] = useState(0);
-	const [isDissected, setIsDissected] = useState(false);
+	const [selectedMode, setSelectedMode] = useState<string>(MODES[0].id);
 
-	const current = SENTENCES[index];
-
-	const parts = useMemo(() => {
-		return current.parts.map((part, i) => ({
-			...part,
-			colorClass: TOKEN_COLORS[i % TOKEN_COLORS.length]
-		}));
-	}, [current]);
-
-	function handleNext() {
-		setIndex((prev) => (prev + 1) % SENTENCES.length);
-		setIsDissected(false);
-	}
+	const activeMode =
+		MODES.find((mode) => mode.id === selectedMode) ?? MODES[0];
 
 	return (
-		<div className="min-h-[calc(100vh-5rem)] bg-[#f6fbf7] px-6 py-10">
-			<div className="mx-auto flex min-h-[80vh] max-w-6xl flex-col">
-				<div className="mb-10 flex items-center justify-between">
-					<div>
-						<p className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-500">
-							Sentence Practice
-						</p>
-						<h1 className="text-3xl font-semibold text-neutral-800">Prototype</h1>
-					</div>
+		<main className="min-h-[calc(100vh-80px)] bg-[#f6fbf7]">
+			<div className="mx-auto flex w-full max-w-6xl flex-col px-4 py-10 lg:px-6">
+				<header className="mx-auto mb-10 max-w-2xl text-center">
+					<p className="text-sm font-medium uppercase tracking-[0.22em] text-neutral-500">
+						Sentence Practice
+					</p>
+					<h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl">
+						Choose a practice mode
+					</h1>
+					<p className="mt-4 text-base leading-7 text-neutral-600">
+						Practice sentence structure, word recall, and translation in a few
+						different ways. Pick the mode you want to train today.
+					</p>
+				</header>
 
-					<div className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm">
-						{index + 1} / {SENTENCES.length}
-					</div>
-				</div>
+				<div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+					<section className="grid gap-4">
+						{MODES.map((mode) => {
+							const isSelected = selectedMode === mode.id;
 
-				<div className="flex flex-1 flex-col items-center justify-center">
-					<div className="w-full max-w-5xl rounded-[2rem] border border-black/5 bg-white/90 px-8 py-12 shadow-sm md:px-12 md:py-16">
-						<div className="mb-12 min-h-[260px]">
-							<div className="flex min-h-[260px] flex-col items-center justify-center">
-								<p className="mb-8 text-sm uppercase tracking-[0.25em] text-neutral-400">
-									Spanish sentence
-								</p>
-
-								<motion.div
-									layout
-									transition={{
-										layout: {
-											type: 'spring',
-											stiffness: 260,
-											damping: 26
-										}
-									}}
+							return (
+								<button
+									key={mode.id}
+									type="button"
+									onClick={() => setSelectedMode(mode.id)}
 									className={cn(
-										'flex flex-wrap items-center justify-center',
-										isDissected ? 'gap-x-3 gap-y-6' : 'gap-x-3.5 gap-y-2'
+										'w-full rounded-[1.75rem] border p-5 text-left transition-all duration-200',
+										'hover:-translate-y-0.5 hover:shadow-md',
+										isSelected
+											? 'border-neutral-900 bg-white shadow-md'
+											: 'border-black/5 bg-white/80 shadow-sm'
 									)}
 								>
-									{parts.map((part, i) => (
-										<motion.div
-											key={`${current.id}-${part.id}`}
-											layout
-											transition={{
-												layout: {
-													type: 'spring',
-													stiffness: 280,
-													damping: 28
-												}
-											}}
-											className="flex items-center"
+									<div className="flex items-start gap-4">
+										<div
+											className={cn(
+												'grid size-12 shrink-0 place-items-center rounded-2xl',
+												mode.bg,
+												mode.accent
+											)}
 										>
-											<WordToken
-												part={part}
-												isDissected={isDissected}
-												isLast={i === parts.length - 1}
-											/>
+											{mode.icon}
+										</div>
 
-											<AnimatePresence>
-												{isDissected && i < parts.length - 1 ? (
-													<motion.span
-														initial={{ opacity: 0, scale: 0.7, y: 6 }}
-														animate={{ opacity: 1, scale: 1, y: 0 }}
-														exit={{ opacity: 0, scale: 0.7, y: -4 }}
-														transition={{ duration: 0.2, delay: i * 0.02 }}
-														className="mx-2 text-2xl font-light text-neutral-400"
+										<div className="min-w-0 flex-1">
+											<div className="flex items-center justify-between gap-3">
+												<h2 className="text-xl font-semibold text-neutral-900">
+													{mode.title}
+												</h2>
+
+												{isSelected && (
+													<span className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-white">
+														<CheckCircle2 className="size-3.5" />
+														Selected
+													</span>
+												)}
+											</div>
+
+											<p className="mt-2 text-sm leading-6 text-neutral-600">
+												{mode.description}
+											</p>
+
+											<div className="mt-4 flex flex-wrap gap-2">
+												{mode.highlights.map((item) => (
+													<span
+														key={item}
+														className="rounded-full border border-black/5 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-700"
 													>
-														+
-													</motion.span>
-												) : null}
-											</AnimatePresence>
-										</motion.div>
-									))}
-								</motion.div>
+														{item}
+													</span>
+												))}
+											</div>
+										</div>
+									</div>
+								</button>
+							);
+						})}
+					</section>
 
-								<motion.p
-									layout
-									animate={{ opacity: isDissected ? 1 : 0.7 }}
-									className="mt-8 text-center text-sm text-neutral-500"
-								>
-									{isDissected
-										? 'Hover a phrase to see its translation and grammar role.'
-										: 'Tap Dissect to spread the sentence apart.'}
-								</motion.p>
-							</div>
+					<aside className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm">
+						<div
+							className={cn(
+								'mb-5 inline-flex rounded-2xl p-3',
+								activeMode.bg,
+								activeMode.accent
+							)}
+						>
+							{activeMode.icon}
 						</div>
 
-						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-							<Button
-								variant="outline"
-								size="lg"
-								className="min-w-[180px]"
-								onClick={() => setIsDissected((prev) => !prev)}
-							>
-								{isDissected ? 'Hide dissect' : 'Dissect'}
-							</Button>
+						<h3 className="text-2xl font-semibold text-neutral-900">
+							{activeMode.title}
+						</h3>
 
-							<Button
-								size="lg"
-								className="min-w-[180px]"
-								onClick={handleNext}
-							>
-								Next
-							</Button>
-						</div>
+						<p className="mt-3 text-sm leading-6 text-neutral-600">
+							{activeMode.description}
+						</p>
 
-						<div className="mt-8 text-center">
-							<p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
-								Reference translation
+						<div className="mt-6 rounded-2xl border border-black/5 bg-[#f8faf8] p-4">
+							<p className="flex items-center gap-2 text-sm font-semibold text-neutral-800">
+								<Sparkles className="size-4" />
+								How this mode works
 							</p>
-							<p className="mt-2 text-base text-neutral-600">{current.english}</p>
+
+							{activeMode.id === 'builder' && (
+								<div className="mt-3 space-y-3 text-sm text-neutral-600">
+									<p>
+										You’ll get an English prompt or Spanish audio, then assemble the
+										correct Spanish sentence from shuffled chunks.
+									</p>
+									<div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2">
+										<Volume2 className="size-4 text-neutral-500" />
+										<span>Can later support audio-first practice very naturally.</span>
+									</div>
+								</div>
+							)}
+
+							{activeMode.id === 'fill-blank' && (
+								<div className="mt-3 space-y-3 text-sm text-neutral-600">
+									<p>
+										A sentence appears with one word missing. The learner types the
+										word that best completes it.
+									</p>
+									<div className="rounded-xl bg-white px-3 py-2 text-neutral-700">
+										Example: <span className="font-medium">La niña ____ un libro.</span>
+									</div>
+								</div>
+							)}
+
+							{activeMode.id === 'translate' && (
+								<div className="mt-3 space-y-3 text-sm text-neutral-600">
+									<p>
+										The learner reads a full Spanish sentence and types the English
+										translation from memory.
+									</p>
+									<div className="rounded-xl bg-white px-3 py-2 text-neutral-700">
+										Example: <span className="font-medium">La niña lee un libro.</span>
+									</div>
+								</div>
+							)}
 						</div>
-					</div>
+
+						<div className="mt-6 flex flex-col gap-3">
+							<Button asChild size="lg" className="w-full">
+								<Link href={activeMode.href}>Start {activeMode.title}</Link>
+							</Button>
+
+							<Button asChild variant="outline" size="lg" className="w-full">
+								<Link href="/practice">Back to Practice</Link>
+							</Button>
+						</div>
+					</aside>
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function WordToken({
-	part,
-	isDissected,
-	isLast
-}: {
-	part: SentencePart & { colorClass: string };
-	isDissected: boolean;
-	isLast: boolean;
-}) {
-	return (
-		<div className="group relative">
-			<motion.div
-				layout
-				transition={{
-					layout: {
-						type: 'spring',
-						stiffness: 300,
-						damping: 30
-					}
-				}}
-				animate={{
-					scale: isDissected ? 0.94 : 1,
-					borderRadius: isDissected ? 18 : 10
-				}}
-				className={cn(
-					'relative cursor-default select-none font-semibold text-neutral-800 transition-all duration-200',
-					isDissected
-						? cn(
-								'px-4 py-3 shadow-sm',
-								part.colorClass
-						  )
-						: 'bg-transparent px-0 py-0 text-3xl md:text-5xl'
-				)}
-			>
-				{part.text}
-				{!isDissected && !isLast ? ' ' : ''}
-			</motion.div>
-
-			{isDissected ? (
-				<div
-					className={cn(
-						'pointer-events-none absolute left-1/2 top-0 z-30 w-max max-w-[240px] -translate-x-1/2',
-						'-translate-y-[calc(100%+14px)] rounded-xl border border-black/5 bg-white px-3 py-2 text-center shadow-lg',
-						'opacity-0 transition-all duration-200',
-						'group-hover:-translate-y-[calc(100%+20px)] group-hover:opacity-100'
-					)}
-				>
-					<p className="text-sm font-semibold text-neutral-800">{part.translation}</p>
-					<p className="mt-1 text-xs uppercase tracking-wide text-neutral-500">{part.pos}</p>
-				</div>
-			) : null}
-		</div>
+		</main>
 	);
 }
